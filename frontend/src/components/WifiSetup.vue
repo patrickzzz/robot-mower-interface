@@ -9,13 +9,14 @@
       <div id="accordion-content-wifi-setup" class="accordion-collapse collapse">
         <div class="accordion-body">
           <p class="text-muted" style="font-size: 0.7em;">If no Wifi entered, or connection can't be established, an Access Point will be created.<br/>
-            Current wifi: {{ currentSSID }} with IP {{ currentIP }}
+            Current wifi: <i>{{ currentSSID }}</i> with IP <i>{{ currentIP }}</i> and hostname <i>{{ hostname }}</i><br/>
             <!-- if isAccessPoint: show info that it is access point mode -->
             <span v-if="isAccessPoint">(📡 Access Point Mode)</span>
           </p>
+          <p class="text-danger" style="font-size: 0.7em;">After saving a Wifi-Connection, the mower interface will reboot and try to connect to the new Wifi. In the new Wifi it might be available <a target="_blank" :href="'http://' + hostname + '.local'">here</a>. If not, you might need to find out the ip address manually!</p>
           <form @submit.prevent="setWifi">
             <div class="row">
-              <div class="col-lg-6">
+              <div class="col-xl-6">
                 <div class="form-floating mb-3">
                   <input autocomplete="off" class="form-control" list="wifiOptions" id="ssid" v-model="ssid" placeholder="Wifi SSID" />
                   <label for="ssid">Connect to Wifi SSID..</label>
@@ -24,7 +25,7 @@
                   </datalist>
                 </div>
               </div>
-              <div class="col-lg-6">
+              <div class="col-xl-6">
                 <div class="form-floating mb-3">
                   <input autocomplete="off" type="password" class="form-control" id="password" v-model="password" placeholder="Wifi password" />
                   <label for="password">Wifi password</label>
@@ -61,6 +62,7 @@ export default {
   props: {
     currentSSID: String,
     currentIP: String,
+    hostname: String,
     isAccessPoint: Boolean
   },
   data() {

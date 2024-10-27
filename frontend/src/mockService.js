@@ -20,6 +20,7 @@ mock.onGet('/status').reply(function(config) {
                 "isAccessPoint": true,
                 "ssid": "MyWifiSSID",
                 "ip": "192.168.1.100",
+                "hostname": "robotmower",
                 "mowingPlanActive": true
             }]);
         }, 1500);

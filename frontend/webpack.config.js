@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-    entry: './src/index.js', // Deine Haupt-JS-Datei
+    entry: './src/index.js',
     output: {
         filename: 'js/bundle.js',
         path: path.resolve(__dirname, 'dist'),

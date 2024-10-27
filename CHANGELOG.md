@@ -1,0 +1,21 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+## [0.2.0]
+### Added
+- Documentation added.
+
+### Changed
+- Changed license from MIT to CC0 1.0 Universal.
+- Minor improvements in frontend.
+- Backend code restructuring.
+- WiFi scanning now asynchronous.
+
+### Fixed
+- Issue with logging (log file truncation error corrected).
+- Time setting now expects new JSON payload.
+
+## [0.1.0]
+### Initial Release
+- Initial version of the project.

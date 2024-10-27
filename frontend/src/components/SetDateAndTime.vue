@@ -12,14 +12,14 @@
             With internet connection, UTC is set automatically. Here you can adjust to your timezone or set Date &amp; Time in Access Point Mode. After Mower complete shutdown, time will be reset.
           </p>
           <form @submit.prevent="saveTime">
-            <div class="row">
-              <div class="col-6">
+            <div class="row justify-content-center">
+              <div class="col-6 col-xl-4">
                 <div class="form-floating mb-3">
                   <input type="date" v-model="date" class="form-control" />
                   <label for="date" class="form-label">Set current date</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-xl-4">
                 <div class="form-floating mb-3">
                   <input type="time" v-model="time" class="form-control" />
                   <label for="time" class="form-label">Set current time</label>
@@ -73,7 +73,7 @@ export default {
     startTimer() {
       this.timer = setInterval(() => {
         this.setCurrentDateTime();
-      }, 60000); // 60000 ms = 1 Minute
+      }, 60000); // 60000 ms = 1 minute
     },
     saveTime() {
       axios.post('/date-time', { date: this.date, time: this.time })
@@ -92,7 +92,7 @@ export default {
             this.bgClass = 'text-bg-danger';
             setTimeout(() => {
               this.showToast = false;
-            }, 8000); // Toast verschwindet nach 3 Sekunden
+            }, 8000);
             console.error('Error saving time:', error);
           });
     }

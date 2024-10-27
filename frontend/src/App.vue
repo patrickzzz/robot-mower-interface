@@ -2,7 +2,7 @@
   <div id="app">
     <div class="container">
       <div class="row justify-content-center mb-5">
-        <div class="col-md-6 text-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 text-center">
           <h1 class="my-4">Robot Mower 🤖🚜</h1>
           <div v-if="statusLoaded">
             <MowerActions @button-pressed="fetchStatus" :status="status" />
@@ -13,7 +13,7 @@
             </div>
 
             <MowingPlan @plan-saved="fetchStatus" :currentDate="status.date" :currentTime="status.time" :currentMowingPlanStatusActive="status.mowingPlanActive" />
-            <WifiSetup :currentSSID="status.ssid" :currentIP="status.ip" :isAccessPoint="status.isAccessPoint" />
+            <WifiSetup :currentSSID="status.ssid" :currentIP="status.ip" :isAccessPoint="status.isAccessPoint" :hostname="status.hostname" />
             <SetDateAndTime @time-saved="fetchStatus" />
             <LogMessages />
           </div>
@@ -60,27 +60,32 @@ export default {
         isAccessPoint: false,
         ssid: '',
         ip: '',
+        hostname: '',
         mowingPlanActive: false
       },
-      statusLoaded: false // Flag zum Überprüfen, ob der Status geladen wurde
+      statusLoaded: false
     };
   },
   methods: {
+    enableBody() {
+      document.body.classList.add('mounted');
+    },
+    scrollTo(id) {
+      document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+    },
     async fetchStatus() {
       try {
         const response = await axios.get('/status');
         this.status = response.data;
-        this.statusLoaded = true; // Status erfolgreich geladen
+        this.statusLoaded = true;
         console.log('Status fetched:', this.status);
       } catch (error) {
         console.error('Error fetching status:', error);
       }
-    },
-    scrollTo(id) {
-      document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
     }
   },
   mounted() {
+    this.enableBody();
     this.fetchStatus();
     setInterval(this.fetchStatus, 15000); // Fetch status every 30 seconds
   }

@@ -40,27 +40,33 @@
                       autocomplete="off"
                       :value="1"
                   />
-                  <label class="btn btn-sm" :for="'btn-check-day-' + day.toLowerCase()">{{ day }}</label>
+                  <label class="btn btn-sm mx-1" :for="'btn-check-day-' + day.toLowerCase()">{{ day }}</label>
                 </template>
               </div>
               <div class="custom-mowing-plan-time">
-                <div class="form-floating mb-3 mx-1" style="display:inline-block;">
-                  <input
-                      type="time"
-                      class="form-control form-control-sm"
-                      id="custom-mowing-plan-time-start"
-                      v-model="planTimeStart"
-                  />
-                  <label for="custom-mowing-plan-time-start">Start</label>
-                </div>
-                <div class="form-floating mb-3 mx-1" style="display:inline-block;">
-                  <input
-                      type="time"
-                      class="form-control form-control-sm"
-                      id="custom-mowing-plan-time-end"
-                      v-model="planTimeEnd"
-                  />
-                  <label for="custom-mowing-plan-time-end">End</label>
+                <div class="row justify-content-center">
+                  <div class="col-6 col-xl-4">
+                    <div class="form-floating mb-3">
+                      <input
+                          type="time"
+                          class="form-control form-control-sm"
+                          id="custom-mowing-plan-time-start"
+                          v-model="planTimeStart"
+                      />
+                      <label for="custom-mowing-plan-time-start">Start</label>
+                    </div>
+                  </div>
+                  <div class="col-6 col-xl-4">
+                    <div class="form-floating mb-3">
+                      <input
+                          type="time"
+                          class="form-control form-control-sm"
+                          id="custom-mowing-plan-time-end"
+                          v-model="planTimeEnd"
+                      />
+                      <label for="custom-mowing-plan-time-end">End</label>
+                    </div>
+                  </div>
                 </div>
                 <div class="mb-3" style="font-size:0.7em">
                   <!-- show little warning, if {{ currentDate }} {{ currentTime }} are unset, otherwise show date/time -->
