@@ -4,7 +4,6 @@ import MockAdapter from 'axios-mock-adapter';
 
 const mock = new MockAdapter(axios);
 
-
 mock.onGet('/status').reply(function(config) {
     return new Promise(function(resolve, reject) {
         setTimeout(function() {
@@ -86,3 +85,16 @@ mock.onGet('/log-messages').reply(
     '[Wed, 24/10/23 11:08:53] Checking automatic start or sending home required\n' +
     '[Wed, 24/10/23 11:08:53] No custom mowing plan active'
 );
+
+mock.onPost('/update').reply(function(config) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            resolve([200]);
+        }, 1500);
+    });
+});
+
+// version.json
+mock.onGet('/version.json').reply(200, {
+    "version": "x.x.x-dev"
+});

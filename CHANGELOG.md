@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.0]
+### Added
+- Ability to update the firmware+filesystem of the mower interface over the air (OTA) in Webinterface or API Endpoint.
+
 ## [0.2.2]
 ### Added
 - Automatically reconnect to Wifi if connection is lost

@@ -16,6 +16,7 @@
             <WifiSetup :currentSSID="status.ssid" :currentIP="status.ip" :isAccessPoint="status.isAccessPoint" :hostname="status.hostname" />
             <SetDateAndTime @time-saved="fetchStatus" />
             <LogMessages />
+            <UpdateSystem />
           </div>
           <div v-else>
             <p>Loading status, please wait...</p>
@@ -37,6 +38,7 @@ import MowingPlan from "./components/MowingPlan.vue";
 import WifiSetup from "./components/WifiSetup.vue";
 import SetDateAndTime from "./components/SetDateAndTime.vue";
 import LogMessages from './components/LogMessages.vue';
+import UpdateSystem from "./components/UpdateSystem.vue";
 
 export default {
   name: 'App',
@@ -46,7 +48,8 @@ export default {
     MowingPlan,
     WifiSetup,
     SetDateAndTime,
-    LogMessages
+    LogMessages,
+    UpdateSystem
   },
   data() {
     return {
@@ -63,7 +66,8 @@ export default {
         hostname: '',
         mowingPlanActive: false
       },
-      statusLoaded: false
+      statusLoaded: false,
+      version: ''
     };
   },
   methods: {
@@ -82,11 +86,22 @@ export default {
       } catch (error) {
         console.error('Error fetching status:', error);
       }
+    },
+    async fetchVersion() {
+      console.log('Loading version...')
+      try {
+        const response = await axios.get('/version.json');
+        this.version = response.data.version;
+        document.getElementById('version').textContent = 'v' + this.version;
+      } catch (error) {
+        console.error('Error fetching version:', error);
+      }
     }
   },
   mounted() {
     this.enableBody();
     this.fetchStatus();
+    this.fetchVersion();
     setInterval(this.fetchStatus, 15000); // Fetch status every 30 seconds
   }
 };

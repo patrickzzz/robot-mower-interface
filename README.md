@@ -115,6 +115,19 @@ I am not responsible for any damage to the mower or any other device.
     - `time` (string): Time in the format `HH:MM`
 - **Response:** `200 OK` if successful, `400 Bad Request` if parameters are missing
 
+### 12. `/update`
+- **Method:** `POST`
+- **Description:** Allows for simultaneous upload and update of both firmware and filesystem files on the device. This endpoint manages both types of updates, determining the file type based on the filename.
+- **Payload:** Multipart form-data with up to two files:
+  - `firmware.bin`: Firmware binary file for updating the main program.
+  - `filesystem.bin`: Filesystem binary file (e.g., SPIFFS) for updating the file system.
+- **Response:**
+  - **`200 OK`**: Returns `"Update Success!"` if the upload and update process are successful for both files.
+  - **`500 Internal Server Error`**: Returns `"Update Failed!"` if an error occurs during either update.
+- **Usage Notes:**
+  - **File Recognition**: The update type is determined by the filename—`firmware.bin` for firmware updates and `filesystem.bin` for filesystem updates.
+  - **Restart**: Upon successful updates, the device automatically restarts to apply changes.
+
 ## Needed parts
 - Ferrex R800Easy+ robot mower (or similar)
 - ESP32 (e.g., ESP32 DevKitC)

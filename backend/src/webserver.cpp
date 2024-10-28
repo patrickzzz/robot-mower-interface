@@ -3,6 +3,7 @@
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
+#include <Update.h>
 #include "webserver.h"
 #include "wifi_utils.h"
 #include "logger.h"
@@ -62,6 +63,62 @@ void initializeWebserverRoutes() {
   server.on("/wifis", HTTP_GET, handleGetWifis);
   server.addHandler(createSetWifiHandler());
   server.addHandler(createSetDateAndTimeHandler());
+
+  // Update route for both firmware and filesystem
+  server.on(
+      "/update", HTTP_POST,
+      [](AsyncWebServerRequest *request) {
+          if (!Update.hasError()) {
+              request->send(200, "text/plain", "Update Success!");
+              ESP.restart();
+          } else {
+              request->send(500, "text/plain", "Update Failed!");
+          }
+      },
+      [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+          if (filename.startsWith("firmware.bin")) {
+              // Firmware-Update
+              if (!index) {
+                  Serial.printf("Firmware-Update Start: %s\n", filename.c_str());
+                  if (!Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH)) {  // U_FLASH für Firmware
+                      Update.printError(Serial);
+                  }
+              }
+              if (len) {
+                  if (Update.write(data, len) != len) {
+                      Update.printError(Serial);
+                  }
+              }
+              if (final) {
+                  if (Update.end(true)) {
+                      Serial.printf("Firmware-Update Success: %u bytes\n", index + len);
+                  } else {
+                      Update.printError(Serial);
+                  }
+              }
+          } else if (filename.startsWith("filesystem.bin")) {
+              // Filesystem-Update
+              if (!index) {
+                  Serial.printf("Filesystem-Update Start: %s\n", filename.c_str());
+                  if (!Update.begin(UPDATE_SIZE_UNKNOWN, U_SPIFFS)) {  // U_SPIFFS für Filesystem
+                      Update.printError(Serial);
+                  }
+              }
+              if (len) {
+                  if (Update.write(data, len) != len) {
+                      Update.printError(Serial);
+                  }
+              }
+              if (final) {
+                  if (Update.end(true)) {
+                      Serial.printf("Filesystem-Update Success: %u bytes\n", index + len);
+                  } else {
+                      Update.printError(Serial);
+                  }
+              }
+          }
+      }
+  );
 }
 
 // handlers
