@@ -12,7 +12,9 @@
 int loopCounter = 0;
 
 void setup() {
-  esp_task_wdt_init(30, false); // Wait time in seconds
+  // for now a higher timeout, for some possible longer requests on webserver resources.
+  // but as content is gzipped, it should be fine
+  esp_task_wdt_init(60, false); // Wait time in seconds
 
   Serial.begin(115200);
 

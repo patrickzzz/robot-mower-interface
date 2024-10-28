@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.1]
+### Changed
+- Forced serving of html+js gzipped
+- Increased wdt to 60s for handling bigger requests (hopefully not needed)
+
 ## [0.2.0]
 ### Added
 - Documentation added.

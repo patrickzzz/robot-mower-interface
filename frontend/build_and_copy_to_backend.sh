@@ -2,5 +2,11 @@
 
 # Build the frontend
 npm run build
-cp dist/index.html ../backend/data/frontend/index.html
-cp dist/js/bundle.js ../backend/data/frontend/js/bundle.js
+
+# Gzip the frontend files
+gzip -k -f dist/index.html
+gzip -k -f dist/js/bundle.js
+
+# Copy the gzipped files to the backend
+mv dist/index.html.gz ../backend/data/frontend/index.html.gz
+mv dist/js/bundle.js.gz ../backend/data/frontend/js/bundle.js.gz
