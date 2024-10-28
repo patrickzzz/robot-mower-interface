@@ -9,6 +9,7 @@
 String hostname_default = "robotmower";
 String ssid_default = "Robot Mower";
 String password_default = "MowerInterface";
+bool onceConnectedToWifi = false;
 bool apMode = false;
 String apName;
 int networks = 0;
@@ -131,11 +132,19 @@ bool connectToWifi() {
     if (wifiMulti.run() == WL_CONNECTED) {
         logMessage("Connected to WiFi!", 1);
         logMessage("Webinterface available at: http://" + WiFi.localIP().toString());
+        onceConnectedToWifi = true;
         return true;
     } else {
         logMessage("Wifi connection failed.", 0);
         return false;
     }
+}
+
+void reconnectToWifiIfNeeded() {
+  if(WiFi.status() != WL_CONNECTED && apMode == false && onceConnectedToWifi == true) {
+    logMessage("Wifi connection lost, trying to reconnect..", 0);
+    connectToWifi();
+  }
 }
 
 // Start Access Point

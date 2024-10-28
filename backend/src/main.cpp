@@ -44,6 +44,11 @@ void loop() {
   // do every 10 seconds
   checkAsyncScanNetworksUpdate();
 
+  // do every 30 seconds
+  if(loopCounter == 3 || loopCounter == 0) {
+    reconnectToWifiIfNeeded();
+  }
+
   // do every 60 seconds
   if(loopCounter == 0)  {
     checkAutomaticStartOrSendingHomeRequired();

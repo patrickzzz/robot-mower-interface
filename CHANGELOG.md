@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.2.2]
+### Added
+- Automatically reconnect to Wifi if connection is lost
+
 ## [0.2.1]
 ### Changed
 - Forced serving of html+js gzipped

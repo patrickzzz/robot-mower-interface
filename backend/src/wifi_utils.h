@@ -16,6 +16,7 @@ String getNetworksJsonArray();
 bool loadWifiCredentials();
 void saveWifiCredentials(String newSsid, String newPassword);
 bool connectToWifi();
+void reconnectToWifiIfNeeded();
 void startAccessPoint();
 void getAccessPointNameForDevice();
 void removeOldestEntry();
