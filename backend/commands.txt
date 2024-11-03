@@ -1,0 +1,8 @@
+ 1296  pio device monitor
+ 1297  pio run --target uploadfs
+ 1298  pio run --target upload;pio device monitor
+
+or
+
+ 1088  pio run
+ 1089  pio run -t buildfs

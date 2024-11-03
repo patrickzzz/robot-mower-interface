@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.1]
+### Changed
+- Visualize Log message in webinterface as mono spaced text
+- Load mowing plan on boot up again
+
 ## [0.3.0]
 ### Added
 - Ability to update the firmware+filesystem of the mower interface over the air (OTA) in Webinterface or API Endpoint.

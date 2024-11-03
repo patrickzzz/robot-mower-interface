@@ -14,7 +14,7 @@
                 class="w-100"
                 rows="14"
                 readonly
-                style="white-space: pre; overflow: auto;font-size: 0.7em;"
+                style="white-space: pre; overflow: auto;font-size: 0.75em;font-family: Courier New, monospace;"
                 wrap="off"
             ></textarea>
           </form>

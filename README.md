@@ -17,6 +17,7 @@ Initially this is done for a Ferrex R800Easy+ robot mower (meaning, it will be p
 - **Logs**: See logs from the mower
 - **API** Access all features via API
 - **Web Interface** Access all features via a web interface
+- **OTA Updates** Update the firmware and filesystem of the mower interface over the air (OTA) in Webinterface or API Endpoint.
 
 ## Demo of first running version
 [![Demo](https://img.youtube.com/vi/VGW71knz1Dk/0.jpg)](https://www.youtube.com/watch?v=VGW71knz1Dk)

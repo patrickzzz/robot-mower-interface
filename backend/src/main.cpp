@@ -26,8 +26,6 @@ void setup() {
   listSPIFFSFiles();
   showUsageOfSPIFFSFileSystem();
 
-  logMessage("Update works!!", 2);
-
   logMessage("Starting Robot Mower Interface", 1);
   setupPins();
 
@@ -41,6 +39,8 @@ void setup() {
   initializeWebServer();
 
   asyncScanNetworks();
+
+  loadMowingPlan();
 }
 
 void loop() {

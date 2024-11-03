@@ -89,6 +89,10 @@ void checkStateChangeInDockingOrOutside() {
       return;
     }
     stateInDockingOrOutside = "IN DOCKING";
+    if(mowerWasStartedManually) {
+      // reset, so next planned start will not be treated as manual start any more
+      mowerWasStartedManually = false;
+    }
     if(currentMowingPlan.customMowingPlanActive) {
       // after coming home:
       // press stop button, if mower is in docking station and custom mowing plan is active
