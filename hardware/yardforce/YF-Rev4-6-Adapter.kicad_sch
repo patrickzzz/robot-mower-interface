@@ -11282,6 +11282,33 @@
 				(hide yes)
 			)
 		)
+		(property "MF" "ZHOURI"
+			(at 44.45 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF Part" "PZ2.54-1*2"
+			(at 44.45 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB" "C5360898"
+			(at 44.45 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5ba5359b-176c-4c9f-bf49-5c7f953d8167")
 		)
@@ -14488,6 +14515,15 @@
 				(hide yes)
 			)
 		)
+		(property "JLCPCB" "C82288"
+			(at 137.16 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7ac02734-737b-4578-94d7-032da75b7914")
 		)
@@ -15621,7 +15657,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uF/10V"
+		(property "Value" "10uF"
 			(at 246.38 42.418 0)
 			(effects
 				(font
@@ -15736,7 +15772,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB mini/micro connector"
+		(property "Description" "1A USB 2.0 Direct Insert 5P Female, Micro-B Plugin USB"
 			(at 144.78 100.33 0)
 			(effects
 				(font
@@ -15745,7 +15781,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFR" "TYPEC-300-BCP16H65"
+		(property "MFR" "MICRO 180°ZB"
 			(at 144.78 100.33 0)
 			(effects
 				(font
@@ -15754,7 +15790,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCB" "C5454937"
+		(property "JLCPCB" "C668588"
 			(at 144.78 100.33 0)
 			(effects
 				(font
@@ -15763,7 +15799,7 @@
 				(hide yes)
 			)
 		)
-		(property "MF" "XUNPU"
+		(property "MF" "SHOU HAN"
 			(at 144.78 100.33 0)
 			(effects
 				(font
@@ -16286,6 +16322,33 @@
 			)
 		)
 		(property "Description" "RF Module, ESP32-S3 SoC, Wi-Fi 802.11b/g/n, Bluetooth, BLE, 32-bit, 3.3V, onboard antenna, SMD"
+			(at 87.63 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF" "Espressif Systems"
+			(at 87.63 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF Part" "ESP32-S3-WROOM-1-N4"
+			(at 87.63 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB" "C2913197"
 			(at 87.63 92.71 0)
 			(effects
 				(font
@@ -16920,7 +16983,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uF/10V"
+		(property "Value" "10uF"
 			(at 216.662 42.418 0)
 			(effects
 				(font

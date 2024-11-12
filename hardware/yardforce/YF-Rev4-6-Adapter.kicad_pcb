@@ -995,6 +995,19 @@
 				)
 			)
 		)
+		(property "JLCPCB" "C82288"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f313b4e-61a3-4986-a598-8e9d1c11da89")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/8836f730-1edb-46bd-a1d4-b2685b2595ba")
 		(sheetname "Root")
@@ -3123,7 +3136,7 @@
 				)
 			)
 		)
-		(property "Value" "10uF/10V"
+		(property "Value" "10uF"
 			(at 0 1.43 -90)
 			(layer "F.Fab")
 			(uuid "a03c4b97-ec38-4b91-8827-fb09f3094a71")
@@ -4374,6 +4387,45 @@
 				)
 			)
 		)
+		(property "MF" "Espressif Systems"
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a2228afb-6d9e-462a-9092-4c20f0158429")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MF Part" "ESP32-S3-WROOM-1-N4"
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc144868-e434-4f76-bafe-8d0ab5a07d8c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "JLCPCB" "C2913197"
+			(at 0 0 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d6543f66-4a0f-464b-9aef-2ddac0d8870d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "ESP32?S3?WROOM?1*")
 		(path "/e4988048-c928-40eb-b3f6-f6d6e61f9eda")
 		(sheetname "Root")
@@ -5239,7 +5291,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm, rounded Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "JP3"
-			(at 0 -1.8 360)
+			(at 0 -1.8 0)
 			(layer "F.SilkS")
 			(uuid "8d804d3b-22aa-4072-a2c0-56f4fb6be473")
 			(effects
@@ -5250,7 +5302,7 @@
 			)
 		)
 		(property "Value" "Rev4-B 3.3V"
-			(at 0 1.9 360)
+			(at 0 1.9 0)
 			(layer "F.Fab")
 			(uuid "16803e4f-686b-49c9-8b3d-d45ed57c6e09")
 			(effects
@@ -6907,6 +6959,45 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MF" "ZHOURI"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "295a229f-e506-45e2-bb28-797644a02045")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MF Part" "PZ2.54-1*2"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51eeb051-a2e2-429a-91ee-f2e216e9d342")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "JLCPCB" "C5360898"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5c28c557-2d85-4718-a6a6-41212ddfbb8d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -8888,7 +8979,7 @@
 				)
 			)
 		)
-		(property "Description" "USB mini/micro connector"
+		(property "Description" "1A USB 2.0 Direct Insert 5P Female, Micro-B Plugin USB"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8900,7 +8991,7 @@
 				)
 			)
 		)
-		(property "JLCPCB" "C5454937"
+		(property "JLCPCB" "C668588"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8913,7 +9004,7 @@
 				)
 			)
 		)
-		(property "MFR" "TYPEC-300-BCP16H65"
+		(property "MFR" "MICRO 180°ZB"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8926,7 +9017,7 @@
 				)
 			)
 		)
-		(property "MF" "XUNPU"
+		(property "MF" "SHOU HAN"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11536,7 +11627,7 @@
 				)
 			)
 		)
-		(property "Value" "10uF/10V"
+		(property "Value" "10uF"
 			(at 3.1625 0.55 90)
 			(layer "F.Fab")
 			(uuid "58a90d4d-672b-49ab-9b0a-31bf574b080e")
@@ -13047,7 +13138,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm, rounded Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "JP2"
-			(at 0 1.8 270)
+			(at 0 1.8 -90)
 			(layer "B.SilkS")
 			(uuid "f17e1e37-a034-4a40-b96b-da1839c77f86")
 			(effects
@@ -13059,7 +13150,7 @@
 			)
 		)
 		(property "Value" "Rev4-A 3.3V"
-			(at 0 -1.9 270)
+			(at 0 -1.9 -90)
 			(layer "B.Fab")
 			(uuid "77c87773-30ee-4d0a-9eaf-887f42e583fb")
 			(effects
