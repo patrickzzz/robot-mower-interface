@@ -1,3 +1,6 @@
 hardware/yardforce/fp-info-cache
 hardware/yardforce/YF-Rev4-6-Adapter.step
 hardware/yardforce/YF-Rev4-6-Adapter-backups/**
+hardware/Backup-ESP32-S3-WROOM-1/**
+hardware/yardforce/production/**
+hardware/yardforce-v01/**
