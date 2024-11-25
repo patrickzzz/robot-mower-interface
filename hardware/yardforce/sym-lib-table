@@ -5,4 +5,5 @@
   (lib (name "CRYSTAL-SMD_4P-L2.0-W1.6-BL")(type "KiCad")(uri "${KIPRJMOD}/libs/CRYSTAL-SMD_4P-L2.0-W1.6-BL.kicad_sym")(options "")(descr ""))
   (lib (name "TS-1187A-B-A-B")(type "KiCad")(uri "${KIPRJMOD}/libs/TS-1187A-B-A-B.kicad_sym")(options "")(descr ""))
   (lib (name "TC2050-IDC")(type "KiCad")(uri "${KIPRJMOD}/libs/TC2050-IDC.kicad_sym")(options "")(descr ""))
+  (lib (name "MICRO-USB-TH_MICRO-USB-A14")(type "KiCad")(uri "${KIPRJMOD}/libs/MICRO-USB-TH_MICRO-USB-A14.kicad_sym")(options "")(descr ""))
 )

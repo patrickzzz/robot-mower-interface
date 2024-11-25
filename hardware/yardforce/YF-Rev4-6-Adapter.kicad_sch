@@ -21813,7 +21813,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "libs:USB_Micro-B_Wuerth_614105150721_Vertical"
+		(property "Footprint" "libs:MINI-USB-SMD_U255-051N-4BH70-XS"
 			(at 29.21 73.66 0)
 			(effects
 				(font
@@ -21831,7 +21831,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "1A USB 2.0 Direct Insert 5P Female, Micro-B Plugin USB"
+		(property "Description" "USB 2.0 1.8A 1 235℃ Direct Insert 5P Female -40℃~+85℃ Gold Brass Alloy Micro-B Plugin USB Connectors"
 			(at 33.02 72.39 0)
 			(effects
 				(font
@@ -21840,7 +21840,7 @@
 				(hide yes)
 			)
 		)
-		(property "MFR" "MICRO 180°ZB"
+		(property "MFR" "U255-051N-4BH70-SS"
 			(at 33.02 72.39 0)
 			(effects
 				(font
@@ -21849,16 +21849,7 @@
 				(hide yes)
 			)
 		)
-		(property "JLCPCB" ""
-			(at 33.02 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" "SHOU HAN"
+		(property "MF" "XKB Connection"
 			(at 33.02 72.39 0)
 			(effects
 				(font
@@ -21868,7 +21859,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C668588"
+		(property "LCSC" "C437033"
 			(at 33.02 72.39 0)
 			(effects
 				(font
