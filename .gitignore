@@ -3,5 +3,10 @@ hardware/yardforce/YF-Rev4-6-Adapter.step
 hardware/yardforce/YF-Rev4-6-Adapter-backups/**
 hardware/Backup-ESP32-S3-WROOM-1/**
 hardware/yardforce/production/**
-hardware/yardforce-v01/**
 sandbox/test-prototype/CMakeFiles/**
+hardware/yardforce-v01/fp-info-cache
+hardware/yardforce-v01/gui_defaults.par
+hardware/yardforce-v01/YF-Rev4-6-Adapter.step
+hardware/yardforce-v01/production/YardForce_Rev4-6_CoverUI-Adapter_0.1.zip
+hardware/yardforce-v01/production/backups/**
+hardware/yardforce-v01/YF-Rev4-6-Adapter-backups/**
