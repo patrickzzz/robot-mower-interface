@@ -4,3 +4,4 @@ hardware/yardforce/YF-Rev4-6-Adapter-backups/**
 hardware/Backup-ESP32-S3-WROOM-1/**
 hardware/yardforce/production/**
 hardware/yardforce-v01/**
+sandbox/test-prototype/CMakeFiles/**
