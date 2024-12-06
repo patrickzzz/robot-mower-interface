@@ -103,6 +103,7 @@ extern "C" void app_main(void) {
         // Variant 2: Get State for all BHS-Sensors, and check their state afterwards, also for the possibility to test multiple states at once
         bhs_sensors::State bhs_state = bhs_sensors::getState();
         if (bhs_state.shell_stop_2 || bhs_state.btn_play) ESP_LOGI(TAG, "Shell-Stop-2 closed, or Play button pressed");
+        if (bhs_state.btn_home) ESP_LOGI(TAG, "Home button pressed");
 
         // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
 
