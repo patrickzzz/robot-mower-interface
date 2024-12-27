@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.3.2]
+### Changed
+- Don't truncate logs on every startup
+
+### Fixed
+- Correct loading of mowing plan on boot up
+
 ## [0.3.1]
 ### Changed
 - Visualize Log message in webinterface as mono spaced text
