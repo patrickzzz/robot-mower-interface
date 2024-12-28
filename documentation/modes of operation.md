@@ -1,6 +1,6 @@
 ## Possible operation modes
 
-## Mainboard / CoverUI matrix of possible adapter connection variants
+### Mainboard / CoverUI matrix of possible adapter connection variants
 
 | Mainboard \ CoverUI                           | YF-Rev4-A\|B | YF-Rev6-A<br>via UART1[^1] | YF-Rev6-B<br>via UART2[^2] |
 |-----------------------------------------------|:------------:|:--------------------------:|:--------------------------:|
