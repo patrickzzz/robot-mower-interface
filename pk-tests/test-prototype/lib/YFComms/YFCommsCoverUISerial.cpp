@@ -1,6 +1,7 @@
 #include "YFCommsCoverUISerial.hpp"
 #include "esp_log.h"
 #include <cstring>
+#include "CoverUILEDState.hpp"
 
 namespace YFComms {
 
@@ -19,7 +20,8 @@ namespace YFComms {
     const int YFCommsCoverUISerial::handshakeMessageResponsesCount = sizeof(handshakeMessageResponses) / sizeof(handshakeMessageResponses[0]);
 
     YFCommsCoverUISerial::YFCommsCoverUISerial()
-        : defaultStatusMessage{0x55, 0xAA, 0x15, 0x50, 0x8E, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00}, currentStatusMessage(defaultStatusMessage) {}
+    : currentStatusMessage{}
+    {}
 
     void YFCommsCoverUISerial::initializeUart() {
         uart_config_t uart_config = {
@@ -45,7 +47,15 @@ namespace YFComms {
         initializeUart();
 
         ESP_LOGI(TAG, "Starting application...");
-        currentStatusMessage = defaultStatusMessage;
+
+        CoverUILEDState uiLEDManager;
+        uiLEDManager.setLEDState(0, CoverUILEDState::LEDState::ON);
+        uiLEDManager.setLEDState(1, CoverUILEDState::LEDState::FLASH_SLOW);
+        uiLEDManager.setLEDState(2, CoverUILEDState::LEDState::FLASH_FAST);
+        uiLEDManager.setLEDState(3, CoverUILEDState::LEDState::FLASH_FAST);
+        uiLEDManager.setLEDState(4, CoverUILEDState::LEDState::FLASH_SLOW);
+        uiLEDManager.setLEDState(5, CoverUILEDState::LEDState::ON);
+        currentStatusMessage = uiLEDManager.getStatusMessage();
         addChecksumToMessage(currentStatusMessage);
 
         sendStartSequence();
@@ -70,18 +80,19 @@ namespace YFComms {
     }
 
     void YFCommsCoverUISerial::processMainboardMessages() {
-
+        // LED Status Messages
         sendMessage(currentStatusMessage);
 
+        // Request Button states message
         sendMessage({
             0x55, 0xAA, 0x02, 0x50, 0x62, 0xB3
         });
 
+        // Some status, containing lock state etc.
         sendMessage({
             0x55, 0xAA, 0x05, 0x50, 0x84, 0x00, 0xFF, 0x01, 0xD8, 0x01
         });
     }
-
 
     void YFCommsCoverUISerial::processCoverUIMessages() {
         char messageBuffer[MAX_MESSAGE_LENGTH];
@@ -107,7 +118,6 @@ namespace YFComms {
             // ...
         }
     }
-
 
     bool YFCommsCoverUISerial::processIncomingSerialMessages(uart_port_t uart_num, char *messageBuffer, int &messageLength) {
         static char message[MAX_MESSAGE_LENGTH];

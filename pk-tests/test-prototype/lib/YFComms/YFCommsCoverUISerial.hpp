@@ -29,7 +29,6 @@ namespace YFComms {
         };
 
         bool handshakeSuccessful = false;
-        std::vector<uint8_t> defaultStatusMessage;
         std::vector<uint8_t> currentStatusMessage;
 
         void sendStartSequence();

@@ -100,7 +100,7 @@ extern "C" void app_main(void) {
     ESP_LOGI(TAG, "Start");
     while (1) {
         // app_main task "alive" flash
-        led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
+        //led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
 
         // How to get (debounced) button, hall or switch state:
         // Variant 1: Directly check one BHS-Sensor
@@ -117,6 +117,6 @@ extern "C" void app_main(void) {
 
         // Let's output some task/stack critical values to be monitored during development
         ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d, BHS-Sensors_Task %d",
-                 uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
+        uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
     }
 }
