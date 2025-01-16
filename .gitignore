@@ -8,5 +8,6 @@ hardware/**/~YF-Rev4-6-Adapter.kicad_sch.lck
 hardware/**/_autosave-YF-Rev4-6-Adapter.kicad_sch
 hardware/**/#auto_saved_files#
 hardware/**/~YF-Rev4-6-Adapter.kicad_sch.lck
+hardware/**/YF-Rev4-6-Adapter-v*.zip
 sandbox/test-prototype/CMakeFiles/**
 sandbox/test-prototype/CMakeCache.txt
