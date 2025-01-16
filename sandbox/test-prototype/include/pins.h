@@ -5,12 +5,24 @@
 
 void SetupPins();
 
-// Port Expander (TCA9555). See usage example in bhs_sensors.hpp
+// ----- UARTs -----
+// YF-Rev6-A Plug
+constexpr int UART_R6A_RX_PIN = 18;
+constexpr int UART_R6A_TX_PIN = 17;
+// YF-Rev6-B Plug
+constexpr int UART_R6B_RX_PIN = 38;
+constexpr int UART_R6B_TX_PIN = 37;
+// OM-UI-Board Plug
+constexpr int UART_OM_RX_PIN = 44;
+constexpr int UART_OM_TX_PIN = 43;
+
+// ----- Port Expander (TCA9555). See usage example in bhs_sensors.hpp -----
 constexpr uint8_t portExpAddr = 0x20;
 constexpr gpio_num_t portExpINT = GPIO_NUM_34;  // Low-Active
 constexpr gpio_num_t portExpSCL = GPIO_NUM_36;
 constexpr gpio_num_t portExpSDA = GPIO_NUM_35;
 
+// ----- HW Specific Pins -----
 #ifdef HW_0_1_X
 
 // ----- OnBoard LEDs -----
@@ -130,8 +142,8 @@ constexpr uint32_t portExpBtnPinMask = expPinStop1 | expPinStop2 | expPinLift | 
                                        expPinShellStop2;
 
 // Play & Home buttons are connected directly to the ESP because they've extended functionality also used as ESP32- boot-mode switch
-constexpr gpio_num_t pinButtonPlay = GPIO_NUM_0; // Also used for ESP "boot mode"
-constexpr gpio_num_t pinButtonHome = GPIO_NUM_3; // Also used for ESP "external JTAG"
+constexpr gpio_num_t pinButtonPlay = GPIO_NUM_0;  // Also used for ESP "boot mode"
+constexpr gpio_num_t pinButtonHome = GPIO_NUM_3;  // Also used for ESP "external JTAG"
 // But got merged/overlayed to a unused port expander port for simpler app handling
 constexpr esp_io_expander_pin_num_t mergedExpPinBtnPlay = IO_EXPANDER_PIN_NUM_16;
 constexpr esp_io_expander_pin_num_t mergedExpPinBtnHome = IO_EXPANDER_PIN_NUM_17;

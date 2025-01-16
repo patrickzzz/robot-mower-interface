@@ -4,6 +4,9 @@
 
 constexpr TickType_t ledsTaskCycle = 10;  // How long to suspend the LEDs-Task in ms
 
+constexpr int UART_R6X_BAUD_RATE = 115200;
+constexpr int UART_OM_BAUD_RATE = 115200;
+
 /**
  * @brief SystemHealth bitfield is for indicating if every system specific is healthy.
  * This is mainly for reaching the backend for a status what's up with the system
