@@ -49,12 +49,15 @@ namespace YFComms {
         ESP_LOGI(TAG, "Starting application...");
 
         CoverUILEDState uiLEDManager;
+        /*
         uiLEDManager.setLEDState(0, CoverUILEDState::LEDState::ON);
         uiLEDManager.setLEDState(1, CoverUILEDState::LEDState::FLASH_SLOW);
         uiLEDManager.setLEDState(2, CoverUILEDState::LEDState::FLASH_FAST);
         uiLEDManager.setLEDState(3, CoverUILEDState::LEDState::FLASH_FAST);
         uiLEDManager.setLEDState(4, CoverUILEDState::LEDState::FLASH_SLOW);
-        uiLEDManager.setLEDState(5, CoverUILEDState::LEDState::ON);
+         */
+        uiLEDManager.setLEDState(17, CoverUILEDState::LEDState::FLASH_SLOW);
+        uiLEDManager.setLEDState(18, CoverUILEDState::LEDState::ON);
         currentStatusMessage = uiLEDManager.getStatusMessage();
         addChecksumToMessage(currentStatusMessage);
 

@@ -97,6 +97,12 @@ extern "C" void app_main(void) {
     YFComms::YFCommsCoverUISerial yf_comms;
     xTaskCreate(YFComms::YFCommsCoverUISerial::task, "YFComms_Task", 4096, &yf_comms, 2, &yf_comms_task_handle);
 
+    // set pinLedCharge to ON
+    gpio_set_level(pinLedCharge, 1);  // On
+    gpio_set_level(pinLedBattery, 1);  // On
+    gpio_set_level(pinLedLifted, 1);  // On
+    gpio_set_level(pinLedConnect, 1);  // On
+
     ESP_LOGI(TAG, "Start");
     while (1) {
         // app_main task "alive" flash
