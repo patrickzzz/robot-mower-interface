@@ -10,24 +10,25 @@ namespace YFComms {
         }
     }
 
-    void LEDState::setLEDState(LED led, LEDStateEnum state) {
+    LEDState& LEDState::setState(LED led, LEDStateEnum state) {
         if (static_cast<size_t>(led) < ledStates.size()) {
             ledStates[static_cast<size_t>(led)] = state;
         }
+        return *this;
     }
 
-    LEDStateEnum LEDState::getLEDState(LED led) const {
+    LEDStateEnum LEDState::getState(LED led) const {
         if (static_cast<size_t>(led) < ledStates.size()) {
             return ledStates[static_cast<size_t>(led)];
         }
         return LEDStateEnum::OFF;
     }
 
-    const std::array<LEDStateEnum, static_cast<size_t>(LED::MAX)>& LEDState::getLEDStates() const {
+    const std::array<LEDStateEnum, static_cast<size_t>(LED::MAX)>& LEDState::getStates() const {
         return ledStates;
     }
 
-    void LEDState::setLEDStates(LEDStateEnum state) {
+    void LEDState::setStates(LEDStateEnum state) {
         for (auto& ledState : ledStates) {
             ledState = state;
         }

@@ -16,6 +16,12 @@ namespace YFComms {
         setupCommunicationHandler();
     }
 
+    void CoverUIController::changeModel(const std::string& modelName) {
+        ESP_LOGI(TAG, "Changing model to: %s", modelName.c_str());
+        boardConfig = std::make_unique<BoardConfig>(modelName);
+        setupCommunicationHandler();
+    }
+
     void CoverUIController::updateButtonStates() {
     /*
         ESP_LOGI(TAG, "Updating button states...");
@@ -32,15 +38,9 @@ namespace YFComms {
     }
 
     void CoverUIController::updateLEDStates() {
-    /*
         ESP_LOGI(TAG, "Updating LED states...");
-        for (const auto& ledConfig : boardConfig->getLEDConfigs()) {
-            if (ledConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), static_cast<uint8_t>(ledState.getLEDState(static_cast<LED>(ledConfig.ledIndex))) > 0);
-            }
-            // Handle other communication types (e.g., GPIO_EXP, UART) here...
-        }
-     */
+        // Handle LED state updates here...
+        commHandler->updateLEDStates(ledState);
     }
 
     LEDState& CoverUIController::getLEDState() {

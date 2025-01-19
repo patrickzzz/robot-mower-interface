@@ -19,13 +19,14 @@ namespace YFComms {
             uint8_t ledIndex;
             CommunicationType commType;
             uint8_t gpioPin;
+            uint8_t uartMessagePos;
         };
 
         struct ButtonConfig {
             uint8_t buttonIndex;
             CommunicationType commType;
             uint8_t gpioPin;
-            uint8_t expanderPin;
+            uint32_t expanderPin;
         };
 
         BoardConfig(std::string modelName);

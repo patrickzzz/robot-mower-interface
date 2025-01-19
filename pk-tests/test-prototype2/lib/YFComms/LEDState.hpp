@@ -45,16 +45,16 @@ namespace YFComms {
         LEDState(); // Constructor
 
         // Set state of a LED
-        void setLEDState(LED led, LEDStateEnum state);
+        LEDState& setState(LED led, LEDStateEnum state);
 
         // Get state of a LED
-        LEDStateEnum getLEDState(LED led) const;
+        LEDStateEnum getState(LED led) const;
 
         // Get all LED states
-        const std::array<LEDStateEnum, static_cast<size_t>(LED::MAX)>& getLEDStates() const;
+        const std::array<LEDStateEnum, static_cast<size_t>(LED::MAX)>& getStates() const;
 
         // Set all LEDs to a specific state
-        void setLEDStates(LEDStateEnum state);
+        void setStates(LEDStateEnum state);
 
         // Debugging: Print the state of all LEDs to the console
         void printStates() const;

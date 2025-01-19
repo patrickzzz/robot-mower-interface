@@ -13,6 +13,9 @@ namespace YFComms {
         // Constructor
         CoverUIController(const std::string& modelName);
 
+        // change model
+        void changeModel(const std::string& modelName);
+
         // Initialize the controller (configure communication, LEDs, buttons)
         void initialize();
 

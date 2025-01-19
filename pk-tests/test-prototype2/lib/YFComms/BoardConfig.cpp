@@ -25,8 +25,6 @@ namespace YFComms {
             loadBoardConfigGPIO(ledConfigs, buttonConfigs);
         } else if (modelName == "500Classic") {
             loadBoardConfig500Classic(ledConfigs, buttonConfigs);
-        } else {
-            throw std::runtime_error("Unknown model name: " + modelName);
         }
     }
 

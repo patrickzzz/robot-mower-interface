@@ -16,7 +16,8 @@
 #include <nvs_flash.h>
 
 #include "LedSequencer.hpp"
-#include "YFCommsCoverUISerial.hpp"
+//#include "YFCommsCoverUISerial.hpp"
+#include "CoverUIController.hpp"
 #include "bhs_sensors.hpp"
 #include "config.h"
 #include "pins.h"
@@ -93,17 +94,29 @@ extern "C" void app_main(void) {
     xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 2, &bhs_sensors_task_handle);
 
     // Init YFCommsCoverUISerial lib
-    TaskHandle_t yf_comms_task_handle = NULL;
-    YFComms::YFCommsCoverUISerial yf_comms;
-    xTaskCreate(YFComms::YFCommsCoverUISerial::task, "YFComms_Task", 4096, &yf_comms, 2, &yf_comms_task_handle);
+    //TaskHandle_t yf_comms_task_handle = NULL;
+    //YFComms::YFCommsCoverUISerial yf_comms;
+    //xTaskCreate(YFComms::YFCommsCoverUISerial::task, "YFComms_Task", 4096, &yf_comms, 2, &yf_comms_task_handle);
 
-    // set pinLedCharge to ON
-    gpio_set_level(pinLedCharge, 1);  // On
-    gpio_set_level(pinLedBattery, 1);  // On
-    gpio_set_level(pinLedLifted, 1);  // On
-    gpio_set_level(pinLedConnect, 1);  // On
+    // create coverUIController for 40 pin gpio
+    YFComms::CoverUIController coverUIController("GPIO");
+    coverUIController.initialize();
+
+    // enable led battery + charging
+    coverUIController.getLEDState()
+        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_SLOW);
+    coverUIController.updateLEDStates();    // sets gpio pins high
+
+    // switch to 500c and update led states there as well..
+    coverUIController.changeModel("500Classic");
+    coverUIController.updateLEDStates();
 
     ESP_LOGI(TAG, "Start");
+    while(1) {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
+    }
+    /*
     while (1) {
         // app_main task "alive" flash
         //led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
@@ -125,4 +138,6 @@ extern "C" void app_main(void) {
         ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d, BHS-Sensors_Task %d",
         uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
     }
+
+     */
 }
