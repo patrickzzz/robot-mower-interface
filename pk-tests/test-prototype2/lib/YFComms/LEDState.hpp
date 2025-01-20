@@ -19,7 +19,7 @@ namespace YFComms {
         BACKGROUND,    // 9
         HOURS_TWO,     // 10
         HOURS_FOUR,    // 11
-        HOURS_SIX_,    // 12
+        HOURS_SIX,    // 12
         HOURS_EIGHT,   // 13
         HOURS_TEN,     // 14
         DAY_MON,       // 15

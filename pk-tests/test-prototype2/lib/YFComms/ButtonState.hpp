@@ -9,13 +9,25 @@
 namespace YFComms {
     // all possible Buttons
     enum class Button : uint8_t {
-        PLAY,         // 0
-        HOME,         // 1
-        STOP,         // 2
-        LIFT,         // 3
-        S1,           // 4
-        S2,           // 5
-        MAX           // 6
+        PLAY,
+        HOME,
+        LOCK,
+        LIFT,
+        S1,
+        S2,
+        HOURS_TWO,
+        HOURS_FOUR,
+        HOURS_SIX,
+        HOURS_EIGHT,
+        HOURS_TEN,
+        DAYS_MON,
+        DAYS_TUE,
+        DAYS_WED,
+        DAYS_THR,
+        DAYS_FRI,
+        DAYS_SAT,
+        DAYS_SUN,
+        MAX
     };
 
     // all possible Button states

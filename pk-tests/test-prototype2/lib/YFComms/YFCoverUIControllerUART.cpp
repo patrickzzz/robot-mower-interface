@@ -1,12 +1,13 @@
-#include "CommunicationUART.hpp"
+#include "YFCoverUIControllerUART.hpp"
 #include "esp_log.h"
 #include <cstring>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 namespace YFComms {
+    constexpr char TAG[] = "YFCoverUIControllerUART";
 
-    constexpr char TAG[] = "CommunicationUART";
-
-    const CommunicationUART::HandshakeMessageResponsePair CommunicationUART::handshakeMessageResponses[] = {
+    const YFCoverUIControllerUART::HandshakeMessageResponsePair YFCoverUIControllerUART::handshakeMessageResponses[] = {
         {{0x55, 0xAA, 0x03, 0x40, 0x01, 0x00, 0x43}, {0x55, 0xAA, 0x02, 0xFF, 0xFF, 0xFF}, false},
         {{0x55, 0xAA, 0x02, 0xFF, 0xFF, 0xFF}, {0x55, 0xAA, 0x02, 0xFF, 0xFE, 0xFE}, false},
         {{0x55, 0xAA, 0x02, 0xFF, 0xFE, 0xFE}, {0x55, 0xAA, 0x05, 0xFF, 0xFD, 0x06, 0x50, 0x20, 0x76}, false},
@@ -16,19 +17,35 @@ namespace YFComms {
         {{0x55, 0xAA, 0x03, 0x40, 0x01, 0x00, 0x43}, {0x0}, false}
     };
 
-    const int CommunicationUART::handshakeMessageResponsesCount = sizeof(handshakeMessageResponses) / sizeof(handshakeMessageResponses[0]);
+    const int YFCoverUIControllerUART::handshakeMessageResponsesCount = sizeof(handshakeMessageResponses) / sizeof(handshakeMessageResponses[0]);
 
-    //CommunicationUART::CommunicationUART() {}
+    YFCoverUIControllerUART::YFCoverUIControllerUART(LEDState& ledState, const BoardConfig& boardConfig)
+     : ledState(ledState), boardConfig(boardConfig), serialTaskHandle(nullptr) {}
 
-    CommunicationUART& CommunicationUART::getInstance() {
-        static CommunicationUART instance;
-        return instance;
+    void YFCoverUIControllerUART::start() {
+        ESP_LOGI(TAG, "Starting YFCoverUIControllerUART");
+        initializeUart();
+        currentLEDMessage = defaultLEDMessage;
+        addChecksumToMessage(currentLEDMessage);
+
+        if (serialTaskHandle == nullptr) {
+            ESP_LOGI(TAG, "Starting serial task");
+            xTaskCreate(serialTask, "SerialTask", 8192, this, 10, &serialTaskHandle);
+        }
     }
 
-    void CommunicationUART::initializeUart() {
-        if(isInitialized) {
-            return;
+    void YFCoverUIControllerUART::stop() {
+        if (serialTaskHandle != nullptr) {
+            vTaskDelete(serialTaskHandle);
+            serialTaskHandle = nullptr;
         }
+        stopped = true;
+    }
+
+    void YFCoverUIControllerUART::initializeUart() {
+        uart_driver_delete(UART_NUM_1);
+
+        ESP_LOGI(TAG, "Initializing UART");
 
         uart_config_t uart_config = {
             .baud_rate = UART_BAUD_RATE,
@@ -41,25 +58,20 @@ namespace YFComms {
         uart_param_config(UART_NUM_1, &uart_config);
         uart_set_pin(UART_NUM_1, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         uart_driver_install(UART_NUM_1, MAX_MESSAGE_LENGTH * 2, 0, 0, NULL, 0);
-
-        isInitialized = true;
     }
 
-    void CommunicationUART::task(void* pvParameters) {
-        // Cast pvParameters on class and call run()
-        //auto* instance = static_cast<CommunicationUART*>(pvParameters);
-        //instance->run();
-        auto& instance = getInstance();
-        instance.run();
+    void YFCoverUIControllerUART::serialTask(void* pvParameters) {
+        ESP_LOGI(TAG, "Starting YFCoverUIControllerUART serialTask");
+        auto* instance = static_cast<YFCoverUIControllerUART*>(pvParameters);
+        instance->tick();
     }
 
-    void CommunicationUART::run() {
-        initializeUart();
-        currentLEDMessage = defaultLEDMessage;
-        addChecksumToMessage(currentLEDMessage);
+    void YFCoverUIControllerUART::tick() {
         sendStartSequence();
+        ESP_LOGI(TAG, "YFCoverUIControllerUART task started");
 
-        while (true) {
+        stopped = false;
+        while (!stopped) {
             if (!handshakeSuccessful) {
                 tryHandshake();
             }
@@ -67,18 +79,18 @@ namespace YFComms {
             processCoverUIMessages();
             processMainboardMessages();
 
-            vTaskDelay(20 / portTICK_PERIOD_MS);
+            vTaskDelay(25 / portTICK_PERIOD_MS);
         }
     }
 
-    void CommunicationUART::sendStartSequence() {
+    void YFCoverUIControllerUART::sendStartSequence() {
         // Send start sequence
         uint8_t tx_data[] = {0x00, 0xFF};
         uart_write_bytes(UART_NUM_1, (const char*)tx_data, sizeof(tx_data));
         ESP_LOGI("MAIN", "Start sequence sent: 0x00 0xFF");
     }
 
-    void CommunicationUART::processMainboardMessages() {
+    void YFCoverUIControllerUART::processMainboardMessages() {
         // LED Status Messages
         sendMessage(currentLEDMessage);
 
@@ -93,7 +105,7 @@ namespace YFComms {
         });
     }
 
-    void CommunicationUART::processCoverUIMessages() {
+    void YFCoverUIControllerUART::processCoverUIMessages() {
         char messageBuffer[MAX_MESSAGE_LENGTH];
         memset(messageBuffer, 0, MAX_MESSAGE_LENGTH);
         int messageLength = 0;
@@ -102,7 +114,7 @@ namespace YFComms {
             std::string hexMessage;
             int i = 0;
             for (auto byte : messageBuffer) {
-                char hex[4];  // Platz für "FF " + Nullterminator
+                char hex[4];
                 snprintf(hex, sizeof(hex), "%02X ", byte);
                 hexMessage += hex;
 
@@ -111,27 +123,25 @@ namespace YFComms {
                 }
             }
 
-            // Hex-Daten als eine Zeile loggen
             ESP_LOGI("UART Received", "%s", hexMessage.c_str());
 
             // ...
         }
     }
 
-    bool CommunicationUART::processIncomingSerialMessages(uart_port_t uart_num, char *messageBuffer, int &messageLength) {
+    bool YFCoverUIControllerUART::processIncomingSerialMessages(uart_port_t uart_num, char *messageBuffer, int &messageLength) {
         static char message[MAX_MESSAGE_LENGTH];
         static int currentLength = 0;
         static TickType_t lastReceiveTime = 0;
 
-        uint8_t data[1]; // Buffer für ein einzelnes Byte
+        uint8_t data[1];
         int length;
 
         while ((length = uart_read_bytes(uart_num, data, 1, 10 / portTICK_PERIOD_MS)) > 0) {
-            // debug output msg
             lastReceiveTime = xTaskGetTickCount();
 
             if (currentLength == 0 && data[0] != 0x55) {
-                continue; // Nachricht beginnt nicht mit 0x55, verwerfen
+                continue; // Message does not start with 0x55
             }
 
             if (currentLength < MAX_MESSAGE_LENGTH) {
@@ -163,7 +173,7 @@ namespace YFComms {
             }
         }
 
-        // Timeout prüfen
+        // Check for timeout
         if ((xTaskGetTickCount() - lastReceiveTime) * portTICK_PERIOD_MS > TIMEOUT_DURATION && currentLength > 0) {
             ESP_LOGW("UART", "Message complete due to timeout: ");
             for (int i = 0; i < currentLength; i++) {
@@ -175,7 +185,7 @@ namespace YFComms {
         return false;
     }
 
-    bool CommunicationUART::isCompleteMessage(const char* message, int length) {
+    bool YFCoverUIControllerUART::isCompleteMessage(const char* message, int length) {
         if (length < 4) return false; // Minimum length is 4
 
         // check header
@@ -189,7 +199,7 @@ namespace YFComms {
      * The checksum is calculated such that the sum of all bytes (including the checksum)
      * modulo 256 equals zero. This ensures the integrity of the transmitted message.
      */
-    bool CommunicationUART::hasCorrectChecksum(const char* message, int length) {
+    bool YFCoverUIControllerUART::hasCorrectChecksum(const char* message, int length) {
         if (length < 4) return false; // Minimum length for valid message is 4 bytes
 
         // Sum of all bytes except the last one (checksum)
@@ -209,7 +219,7 @@ namespace YFComms {
         }
     }
 
-    void CommunicationUART::addChecksumToMessage(std::vector<uint8_t>& message) {
+    void YFCoverUIControllerUART::addChecksumToMessage(std::vector<uint8_t>& message) {
         int checksum = 0;
 
         for (size_t i = 0; i < message.size(); i++) {
@@ -220,7 +230,7 @@ namespace YFComms {
         message.push_back(static_cast<uint8_t>(checksum));
     }
 
-    void CommunicationUART::updateChecksumInMessage(std::vector<uint8_t>& message) {
+    void YFCoverUIControllerUART::updateChecksumInMessage(std::vector<uint8_t>& message) {
         if (message.empty()) {
             return;
         }
@@ -236,7 +246,7 @@ namespace YFComms {
         message[message.size() - 1] = static_cast<uint8_t>(checksum);
     }
 
-    void CommunicationUART::tryHandshake() {
+    void YFCoverUIControllerUART::tryHandshake() {
         while (!handshakeSuccessful) {
             ESP_LOGI(TAG, "Trying to do handshake to CoverUI");
             processHandshake();
@@ -253,8 +263,9 @@ namespace YFComms {
         }
     }
 
-    void CommunicationUART::processHandshake() {
+    void YFCoverUIControllerUART::processHandshake() {
         char messageBuffer[MAX_MESSAGE_LENGTH];
+        memset(messageBuffer, 0, MAX_MESSAGE_LENGTH);
         int messageLength = 0;
 
         // set all response sent flags to false
@@ -270,7 +281,12 @@ namespace YFComms {
                 std::vector<uint8_t> response = getHandshakeResponse(messageBuffer, messageLength);
 
                 if(response.size() == 0) {
-                    //Serial.print("Received handshake message was unknown");
+                    if(messageBuffer[0] == 0x55 && messageBuffer[1] == 0xaa && messageBuffer[3] == 0x50 && messageBuffer[4] == 0x62) {
+                        ESP_LOGI(TAG, "Received button state message, means, handshake had already been done before. Lets try to boot it up!");
+                        handshakeSuccessful = true;
+                        return;
+                    }
+
                     ESP_LOGW(TAG, "Received handshake message was unknown");
                     /*
                     for (int i = 0; i < messageLength; i++) {
@@ -294,7 +310,7 @@ namespace YFComms {
         return;
     }
 
-    std::vector<uint8_t> CommunicationUART::getHandshakeResponse(const char* message, int length) {
+    std::vector<uint8_t> YFCoverUIControllerUART::getHandshakeResponse(const char* message, int length) {
         for (int i = 0; i < handshakeMessageResponsesCount; i++) {
             bool isMatch = memcmp(message, handshakeMessageResponses[i].expectedMessage.data(), handshakeMessageResponses[i].expectedMessage.size()) == 0;
             if (isMatch) {
@@ -311,9 +327,8 @@ namespace YFComms {
         return {};
     }
 
-
-    void CommunicationUART::sendMessage(const std::vector<uint8_t> &response) {
-        // Nachricht in Hex formatieren
+    void YFCoverUIControllerUART::sendMessage(const std::vector<uint8_t> &response) {
+        // Format the message as hex string
         std::string hexMessage;
         for (auto byte : response) {
             char hex[4];  // Platz für "FF " + Nullterminator
@@ -321,14 +336,11 @@ namespace YFComms {
             hexMessage += hex;
         }
 
-        // Hex-Daten als eine Zeile loggen
         ESP_LOGI("UART SEND", "%s", hexMessage.c_str());
-
-        // Nachricht senden
         uart_write_bytes(UART_NUM_1, (const char*)response.data(), response.size());
     }
 
-    void CommunicationUART::setLEDStateInMessage(uint8_t messagePos, LEDStateEnum state) {
+    void YFCoverUIControllerUART::setLEDStateInMessage(uint8_t messagePos, LEDStateEnum state) {
         // messagePos without header
         if (messagePos < currentLEDMessage.size() - 7) { // -7 because of the message header + length + checksum
             currentLEDMessage[5 + messagePos] = static_cast<uint8_t>(state);
@@ -336,5 +348,9 @@ namespace YFComms {
         } else {
             ESP_LOGW(TAG, "LED index %d is out of range for the current model.", messagePos);
         }
+    }
+
+    void YFCoverUIControllerUART::updateLEDStateMessage() {
+        // use ledState and boardConfig...
     }
 } // namespace YFComms

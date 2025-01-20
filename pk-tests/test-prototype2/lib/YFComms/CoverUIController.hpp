@@ -1,10 +1,10 @@
 #pragma once
 
 #include <memory>
-#include "BoardConfig.hpp"
 #include "LEDState.hpp"
 #include "ButtonState.hpp"
-#include "CommunicationHandler.hpp"
+#include "YFCoverUIControllerUART.hpp"
+#include "LEDControllerGPIO.hpp"
 
 namespace YFComms {
 
@@ -39,8 +39,11 @@ namespace YFComms {
         LEDState ledState;
         ButtonState buttonState;
 
-        // Communication handler
-        std::unique_ptr<CommunicationHandler> commHandler;
+        // YFCoverUIControllerUART
+        std::unique_ptr<YFCoverUIControllerUART> yfCoverUIControllerUART;
+
+        // LEDControllerGPIO
+        std::unique_ptr<LEDControllerGPIO> ledControllerGPIO;
 
         // Private helpers
         void setupCommunicationHandler(); // Configures the CommunicationHandler based on BoardConfig

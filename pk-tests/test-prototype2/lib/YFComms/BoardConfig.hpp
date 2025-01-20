@@ -6,7 +6,6 @@
 #include <vector>
 
 namespace YFComms {
-
     class BoardConfig {
     public:
         enum class CommunicationType {
@@ -29,20 +28,16 @@ namespace YFComms {
             uint32_t expanderPin;
         };
 
-        BoardConfig(std::string modelName);
+        virtual ~BoardConfig() = default;
 
-        const std::vector<LEDConfig>& getLEDConfigs() const;
-        const std::vector<ButtonConfig>& getButtonConfigs() const;
+        virtual const std::vector<LEDConfig>& getLEDConfigs() const = 0;
+        virtual const std::vector<ButtonConfig>& getButtonConfigs() const = 0;
 
-        std::string getModelName() const;
+        std::string getModelName() const { return modelName; }
 
-    private:
+    protected:
+        explicit BoardConfig(std::string modelName) : modelName(std::move(modelName)) {}
         std::string modelName;
-        std::vector<LEDConfig> ledConfigs;
-        std::vector<ButtonConfig> buttonConfigs;
-
-        void setupConfigs(); // Initialize the LED and Button configurations
-        void loadConfig(); // Load the configuration from a file
     };
 
 } // YFComms

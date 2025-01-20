@@ -93,24 +93,36 @@ extern "C" void app_main(void) {
     TaskHandle_t bhs_sensors_task_handle = NULL;
     xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 2, &bhs_sensors_task_handle);
 
-    // Init YFCommsCoverUISerial lib
-    //TaskHandle_t yf_comms_task_handle = NULL;
-    //YFComms::YFCommsCoverUISerial yf_comms;
-    //xTaskCreate(YFComms::YFCommsCoverUISerial::task, "YFComms_Task", 4096, &yf_comms, 2, &yf_comms_task_handle);
-
     // create coverUIController for 40 pin gpio
     YFComms::CoverUIController coverUIController("GPIO");
     coverUIController.initialize();
 
-    // enable led battery + charging
+    // enable leds
     coverUIController.getLEDState()
+        .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_SLOW);
-    coverUIController.updateLEDStates();    // sets gpio pins high
+        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
 
+    //vTaskDelay(5000 / portTICK_PERIOD_MS);  // delay(1000)
     // switch to 500c and update led states there as well..
     coverUIController.changeModel("500Classic");
-    coverUIController.updateLEDStates();
+    coverUIController.updateLEDStates();    // for now, uart message is only updated after this call
 
     ESP_LOGI(TAG, "Start");
     while(1) {
