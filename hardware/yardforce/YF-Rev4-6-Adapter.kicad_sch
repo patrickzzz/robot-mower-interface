@@ -8263,11 +8263,12 @@
 		)
 		(uuid "e060fb26-249a-4d3b-953e-d2358739dea0")
 	)
-	(text "TODO:\n- C9 reference value is 1.2-1.8pF\n- L2 Reference value is 2.4-3.0nH\n- C8 Reference value is 1.8-1.2pF\n\n- UART0-2 are running? Also RXDX/TXDX?\n- WiFi coverage is acceptable?\n- Rain?"
+	(text "TODO:\n- C9 reference value is 1.2-1.8pF\n- L2 Reference value is 2.4-3.0nH\n- C8 Reference value is 1.8-1.2pF\n\n- UART0-2 are running? Also RXDX/TXDX?\n- WiFi coverage is acceptable?\n- Rain?\n\n- Chrystal is more sensitive thane before!!\n  Is v0.2 chrystal the same than v0.1?\n  Measure C's and check routing!"
 		(exclude_from_sim no)
 		(at 89.662 -7.874 0)
 		(effects
 			(font
+				(face "Bitstream Vera Sans Mono")
 				(size 1.27 1.27)
 			)
 			(justify left)

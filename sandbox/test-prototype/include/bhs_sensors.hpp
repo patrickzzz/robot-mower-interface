@@ -40,6 +40,7 @@ namespace bhs_sensors {
 
 // For efficiency and simplicity port expanders input value get assigned 1:1 to a bitfields struct (+ the mapped GPIO play button)
 struct State {
+#ifdef HW_0_1_X
     bool stop_1 : 1;        // 2 pin plug @ CoverUI. Fit with back-handle plug of one side
     bool stop_2 : 1;        // 2 pin plug @ CoverUI. Fit with back-handle plug of the other side
     bool lift : 1;          // Hall (lift) sensor
@@ -57,8 +58,32 @@ struct State {
     bool btn_hr_34 : 1;     // CoverUI button
     bool btn_hr_44 : 1;     // CoverUI button
     bool shell_stop_2 : 1;  // Shell Stop Plug J8 (pin 2-3) on adapter PCB
-    // GPIO button inputs get prefixed to TCA9555 inputs
+    // GPIO button inputs get MSB prefixed to TCA9555 inputs
     bool btn_play : 1;  // CoverUI button
+#elif HW_0_2_X
+    bool stop_2 : 1;        // 2 pin plug @ CoverUI. Fit with back-handle plug of the other side
+    bool lift_x : 1;        // Hall (lift2) sensor
+    bool bump_l : 1;        // Hall (bumper) sensor
+    bool stop_1 : 1;        // 2 pin plug @ CoverUI. Fit with back-handle plug of one side
+    bool bump_r : 1;        // Hall (bumper2) sensor
+    bool lift : 1;          // Hall (lift) sensor
+    bool shell_stop_1 : 1;  // Shell Stop Plug J8 (pin 1-2) on adapter PCB
+    bool shell_stop_2 : 1;  // Shell Stop Plug J8 (pin 2-3) on adapter PCB
+    // Same as with the "hr" LEDs. If a CoverUI has "hr" buttons, it has 4 of them, but their value is model specific
+    bool btn_hr_14 : 1;   // CoverUI button
+    bool btn_hr_24 : 1;   // CoverUI button
+    bool btn_hr_34 : 1;   // CoverUI button
+    bool btn_hr_44 : 1;   // CoverUI button
+    bool btn_lock : 1;    // CoverUI button
+    bool btn_s2 : 1;      // CoverUI button
+    bool btn_s1 : 1;      // CoverUI button
+    bool btn_unused : 1;  // Unused TCA input
+    // GPIO button inputs get MSB prefixed to TCA9555 inputs
+    bool btn_play : 1;  // CoverUI button
+    bool btn_home : 1;  // CoverUI button
+#else
+#error No hardware version HW_x_y_z defined
+#endif
 };
 
 const char *TAG = "bhs_sensors";
@@ -160,8 +185,14 @@ void task(void *arg) {
             ESP_LOGW(TAG, "Port expander read failed with error: %s", esp_err_to_name(ret));
         }
 
-        // Merge play button
+        // Add mergeable button(s)
+#ifdef HW_0_1_X
         states_[state_index_] |= (gpio_get_level(pinButtonPlay) ? 0 : (uint32_t)mergedExpPinBtnPlay);
+#elif HW_0_2_X
+        states_[state_index_] |= (gpio_get_level(pinButtonPlay) ? 0 : (uint32_t)mergedExpPinBtnPlay) | (gpio_get_level(pinButtonHome) ? 0 : (uint32_t)mergedExpPinBtnHome);
+#else
+#error No hardware version HW_x_y_z defined
+#endif
 
         // Debounce
         // uint32_t laststate_debounced_ = state_debounced_.raw;
@@ -169,7 +200,7 @@ void task(void *arg) {
         for (i = 0, state_debounced_.raw = 0xffffffff; i < numDebounceStates; i++)
             state_debounced_.raw &= states_[i];
 
-        /* AH20241204 Could be used as BHS event triggers of changed BHS sensors
+        /* AH20241204 Could be used for BHS event trigger of changed BHS sensors
         // Save what changed
         state_changed_ = state_debounced_ ^ laststate_debounced_.raw; */
 
