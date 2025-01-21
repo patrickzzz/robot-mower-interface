@@ -68,8 +68,8 @@ extern "C" void app_main(void) {
     xTaskCreate(LedsTask, "LEDs_Task", 1024, NULL, 2, &leds_task_handle);
 
     // LED test and blink sequence indicating "Minimal setup successful"
-    led_grn_seq.blink({.limit_blink_cycles = 3, .fulfill = true});  // Default = 200ms ON, 200ms OFF
-    led_red_seq.blink({.limit_blink_cycles = 3, .fulfill = true});  // Default = 200ms ON, 200ms OFF
+    led_grn_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Default = 200ms ON, 200ms OFF
+    led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Default = 200ms ON, 200ms OFF
 
     // @patrickzzz WiFi & WebServer init should start somewhere here.
     // Mainly because WiFi doesn't depend on any of the following peripherals.
@@ -91,7 +91,8 @@ extern "C" void app_main(void) {
 
     // Create BHS_Task with a very low priority for reading and debouncing all (port expander & GPIO) buttons
     TaskHandle_t bhs_sensors_task_handle = NULL;
-    xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 2, &bhs_sensors_task_handle);
+    xTaskCreate(bhs_sensors::task, "BHSS_Task", 4096, NULL, 2, &bhs_sensors_task_handle);
+
 
     // create coverUIController for 40 pin gpio
     YFComms::CoverUIController coverUIController("GPIO");
@@ -103,9 +104,9 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_SLOW)
+        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_SLOW)
+        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::FLASH_SLOW)
         .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::ON)
@@ -119,16 +120,17 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
 
-    //vTaskDelay(5000 / portTICK_PERIOD_MS);  // delay(1000)
+    vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
     // switch to 500c and update led states there as well..
     coverUIController.changeModel("500Classic");
-    coverUIController.updateLEDStates();    // for now, uart message is only updated after this call
 
     ESP_LOGI(TAG, "Start");
     while(1) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
     }
-    /*
+
+
+
     while (1) {
         // app_main task "alive" flash
         //led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
@@ -141,6 +143,11 @@ extern "C" void app_main(void) {
         bhs_sensors::State bhs_state = bhs_sensors::getState();
         if (bhs_state.shell_stop_2 || bhs_state.btn_play) ESP_LOGI(TAG, "Shell-Stop-2 closed, or Play button pressed");
         if (bhs_state.btn_home) ESP_LOGI(TAG, "Home button pressed");
+        if (bhs_state.btn_lock) ESP_LOGI(TAG, "Lock button pressed");
+        if (bhs_state.btn_hr_14) ESP_LOGI(TAG, "14h button pressed");
+        if (bhs_state.btn_hr_24) ESP_LOGI(TAG, "24h button pressed");
+        if (bhs_state.btn_hr_34) ESP_LOGI(TAG, "34h button pressed");
+        if (bhs_state.btn_hr_44) ESP_LOGI(TAG, "44h button pressed");
 
         // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
 
@@ -151,5 +158,4 @@ extern "C" void app_main(void) {
         uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
     }
 
-     */
 }

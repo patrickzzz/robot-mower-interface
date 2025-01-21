@@ -25,13 +25,13 @@ namespace YFComms {
     void YFCoverUIControllerUART::start() {
         ESP_LOGI(TAG, "Starting YFCoverUIControllerUART");
         initializeUart();
-        currentLEDMessage = defaultLEDMessage;
-        addChecksumToMessage(currentLEDMessage);
 
         if (serialTaskHandle == nullptr) {
             ESP_LOGI(TAG, "Starting serial task");
             xTaskCreate(serialTask, "SerialTask", 8192, this, 10, &serialTaskHandle);
         }
+
+        updateLEDStateMessage(true);
     }
 
     void YFCoverUIControllerUART::stop() {
@@ -91,6 +91,8 @@ namespace YFComms {
     }
 
     void YFCoverUIControllerUART::processMainboardMessages() {
+        updateLEDStateMessage();
+
         // LED Status Messages
         sendMessage(currentLEDMessage);
 
@@ -340,17 +342,23 @@ namespace YFComms {
         uart_write_bytes(UART_NUM_1, (const char*)response.data(), response.size());
     }
 
-    void YFCoverUIControllerUART::setLEDStateInMessage(uint8_t messagePos, LEDStateEnum state) {
-        // messagePos without header
-        if (messagePos < currentLEDMessage.size() - 7) { // -7 because of the message header + length + checksum
-            currentLEDMessage[5 + messagePos] = static_cast<uint8_t>(state);
-            updateChecksumInMessage(currentLEDMessage);
-        } else {
-            ESP_LOGW(TAG, "LED index %d is out of range for the current model.", messagePos);
+    void YFCoverUIControllerUART::updateLEDStateMessage(bool forceUpdate) {
+        if (!forceUpdate && !ledState.getIsUpdated()) {
+            return;
         }
-    }
 
-    void YFCoverUIControllerUART::updateLEDStateMessage() {
-        // use ledState and boardConfig...
+        std::vector<uint8_t> newLEDMessage = boardConfig.getDefaultLEDMessage();
+
+        for (const auto& ledConfig : boardConfig.getLEDConfigs()) {
+            if (ledConfig.commType == BoardConfig::CommunicationType::UART) {
+                uint8_t ledStateValue = static_cast<uint8_t>(ledState.getState(static_cast<LED>(ledConfig.ledIndex)));
+                newLEDMessage[5 + ledConfig.uartMessagePos] = ledStateValue;
+            }
+        }
+
+        updateChecksumInMessage(newLEDMessage);
+        currentLEDMessage = newLEDMessage;
+
+        ledState.setIsUpdated(false);
     }
 } // namespace YFComms

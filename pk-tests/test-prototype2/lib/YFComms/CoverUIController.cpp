@@ -20,10 +20,18 @@ namespace YFComms {
 
     void CoverUIController::changeModel(const std::string& modelName) {
         ESP_LOGI(TAG, "Changing model to: %s", modelName.c_str());
-        ledControllerGPIO->stop();
-        ledControllerGPIO.reset();
-        yfCoverUIControllerUART->stop();
-        yfCoverUIControllerUART.reset();
+        if(ledControllerGPIO) {
+            ledControllerGPIO->stop();
+            ledControllerGPIO.reset();
+        }
+        if(yfCoverUIControllerUART) {
+            yfCoverUIControllerUART->stop();
+            yfCoverUIControllerUART.reset();
+        }
+        if(buttonControllerGPIO) {
+            buttonControllerGPIO->stop();
+            buttonControllerGPIO.reset();
+        }
 
         boardConfig = BoardConfigFactory(modelName);
 
@@ -43,7 +51,7 @@ namespace YFComms {
                 // GPIO-LED setzen
                 //gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), static_cast<uint8_t>(ledState.getState(static_cast<LED>(ledConfig.ledIndex))) > 0);
             } else if (ledConfig.commType == BoardConfig::CommunicationType::UART) {
-                yfCoverUIControllerUART->setLEDStateInMessage(ledConfig.uartMessagePos, ledState.getState(static_cast<LED>(ledConfig.ledIndex)));
+                //yfCoverUIControllerUART->setLEDStateInMessage(ledConfig.uartMessagePos, ledState.getState(static_cast<LED>(ledConfig.ledIndex)));
             }
         }
     }
@@ -58,15 +66,21 @@ namespace YFComms {
 
     void CoverUIController::setupCommunicationHandler() {
         ESP_LOGI(TAG, "Setting up communication handler...");
-        if(!yfCoverUIControllerUART)
-        {
-        yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, *boardConfig);
+        if(boardConfig->hasSerialCommunication()) {
+            if(!yfCoverUIControllerUART) {
+                yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, *boardConfig);
+            }
+            yfCoverUIControllerUART->start();
         }
-        yfCoverUIControllerUART->start();
 
         if(!ledControllerGPIO) {
-        ledControllerGPIO = std::make_unique<LEDControllerGPIO>(ledState, *boardConfig);
+            ledControllerGPIO = std::make_unique<LEDControllerGPIO>(ledState, *boardConfig);
         }
         ledControllerGPIO->start();
+
+        if (!buttonControllerGPIO) {
+            buttonControllerGPIO = std::make_unique<ButtonControllerGPIO>(buttonState, *boardConfig);
+        }
+        buttonControllerGPIO->start();
     }
 } // namespace YFComms

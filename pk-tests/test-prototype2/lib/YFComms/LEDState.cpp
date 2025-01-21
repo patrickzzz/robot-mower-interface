@@ -13,7 +13,10 @@ namespace YFComms {
     LEDState& LEDState::setState(LED led, LEDStateEnum state) {
         if (static_cast<size_t>(led) < ledStates.size()) {
             ledStates[static_cast<size_t>(led)] = state;
+
+            isUpdated = true;
         }
+
         return *this;
     }
 
@@ -31,22 +34,6 @@ namespace YFComms {
     void LEDState::setStates(LEDStateEnum state) {
         for (auto& ledState : ledStates) {
             ledState = state;
-        }
-    }
-
-    void LEDState::printStates() const {
-        for (size_t i = 0; i < ledStates.size(); ++i) {
-            ESP_LOGI("LEDState", "LED %zu: %s", i, stateToString(ledStates[i]));
-        }
-    }
-
-    const char* LEDState::stateToString(LEDStateEnum state) {
-        switch (state) {
-            case LEDStateEnum::OFF: return "OFF";
-            case LEDStateEnum::ON: return "ON";
-            case LEDStateEnum::FLASH_SLOW: return "FLASH_SLOW";
-            case LEDStateEnum::FLASH_FAST: return "FLASH_FAST";
-            default: return "UNKNOWN";
         }
     }
 } // namespace YFComms

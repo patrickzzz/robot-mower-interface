@@ -2,12 +2,10 @@
 
 #include <array>
 #include <cstdint>
-#include <cstdio>
-
-// this is for now just a demo/wip implementation
+#include <cstddef>
 
 namespace YFComms {
-    // all possible Buttons
+    // All possible buttons
     enum class Button : uint8_t {
         PLAY,
         HOME,
@@ -30,7 +28,7 @@ namespace YFComms {
         MAX
     };
 
-    // all possible Button states
+    // All possible button states
     enum class ButtonStateEnum : uint8_t {
         RELEASED = 0x00,
         PRESSED = 0x01
@@ -41,25 +39,22 @@ namespace YFComms {
         ButtonState(); // Constructor
 
         // Set state of a Button
-        void setButtonState(Button button, ButtonStateEnum state);
+        ButtonState& setState(Button button, ButtonStateEnum state);
 
         // Get state of a Button
-        ButtonStateEnum getButtonState(Button button) const;
+        ButtonStateEnum getState(Button button) const;
 
         // Get all Button states
-        const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getButtonStates() const;
+        const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
 
-        // Set all Buttons to a specific state
-        void setAllButtonStates(ButtonStateEnum state);
-
-        // Debugging: Print the state of all Buttons to the console
-        void printButtonStates() const;
+        // Check if the state of any Button has been updated
+        bool getIsUpdated() const { return isUpdated; }
+        void setIsUpdated(bool updated) { isUpdated = updated; }
 
     private:
+        bool isUpdated = false;
+
         // Array to store the state of all Buttons
         std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)> buttonStates;
-
-        // Helper function: Convert Button state to readable text
-        static const char* stateToString(ButtonStateEnum state);
     };
 } // namespace YFComms

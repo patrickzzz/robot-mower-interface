@@ -36,6 +36,7 @@ namespace YFComms {
     }
 
     void LEDControllerGPIO::ledControllerGPIOTask(void* pvParameters) {
+        ESP_LOGI("LEDControllerGPIO", "Starting LEDControllerGPIOTask");
         auto* ledControllerGPIO = static_cast<LEDControllerGPIO*>(pvParameters);
 
         int tickCounter = 0;
@@ -94,7 +95,5 @@ namespace YFComms {
 
         gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), newLevel);
         ledLastStates[ledConfig.ledIndex] = newLevel;
-
-        ESP_LOGI("LEDControllerGPIO", "Toggling LED %d to %d", ledConfig.ledIndex, newLevel);
     }
 } // namespace YFComms

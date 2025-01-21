@@ -24,8 +24,6 @@ namespace YFComms {
         void start();
         void stop();
 
-        void setLEDStateInMessage(uint8_t ledIndex, LEDStateEnum state);
-
     private:
         LEDState& ledState;
         const BoardConfig& boardConfig;
@@ -47,7 +45,6 @@ namespace YFComms {
 
         bool stopped = false;
         bool handshakeSuccessful = false;
-        std::vector<uint8_t> defaultLEDMessage = {0x55, 0xAA, 0x15, 0x50, 0x8E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         std::vector<uint8_t> currentLEDMessage = {};
 
         void sendStartSequence();
@@ -56,7 +53,7 @@ namespace YFComms {
         void processCoverUIMessages();
         void processMainboardMessages();
 
-        void updateLEDStateMessage();
+        void updateLEDStateMessage(bool forceUpdate = false);
 
         std::vector<uint8_t> getHandshakeResponse(const char* message, int length);
         bool processIncomingSerialMessages(uart_port_t uart_num, char* messageBuffer, int& messageLength);

@@ -5,6 +5,7 @@
 #include "ButtonState.hpp"
 #include "YFCoverUIControllerUART.hpp"
 #include "LEDControllerGPIO.hpp"
+#include "ButtonControllerGPIO.hpp"
 
 namespace YFComms {
 
@@ -44,6 +45,9 @@ namespace YFComms {
 
         // LEDControllerGPIO
         std::unique_ptr<LEDControllerGPIO> ledControllerGPIO;
+
+        // ButtonControllerGPIO
+        std::unique_ptr<ButtonControllerGPIO> buttonControllerGPIO;
 
         // Private helpers
         void setupCommunicationHandler(); // Configures the CommunicationHandler based on BoardConfig

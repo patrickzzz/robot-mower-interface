@@ -42,8 +42,18 @@ namespace YFComms {
             };
 
             buttonConfigs = {
-                {0, BoardConfig::CommunicationType::GPIO, 5, 0xFFFFFFFF}, // Play Button
+                {static_cast<uint8_t>(Button::PLAY), BoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF},
+                {static_cast<uint8_t>(Button::HOME), BoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF},
             };
+        }
+
+        std::vector<uint8_t> getDefaultLEDMessage() const override {
+            // here it has an incorrect checksum
+            return {0x55, 0xAA, 0x15, 0x50, 0x8E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        }
+
+        bool hasSerialCommunication() const override {
+            return true;
         }
     };
 } // namespace YFComms

@@ -34,6 +34,8 @@ namespace YFComms {
         virtual const std::vector<ButtonConfig>& getButtonConfigs() const = 0;
 
         std::string getModelName() const { return modelName; }
+        virtual bool hasSerialCommunication() const = 0;
+        virtual std::vector<uint8_t> getDefaultLEDMessage() const = 0;
 
     protected:
         explicit BoardConfig(std::string modelName) : modelName(std::move(modelName)) {}

@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "esp_io_expander_tca95xx_16bit/include/esp_io_expander_tca95xx_16bit.h"
+#include "I2CManager.hpp"
 #include "pins.h"
 
 extern LedSequencer led_red_seq;
@@ -116,6 +117,7 @@ static StateU state_debounced_;  // Current state of debounced BHS sensors
 esp_err_t init(SystemHealth &sys_health) {
     ESP_LOGI(TAG, "init()");
 
+/*
     // Init I2C for TCA9555 port expander
     const i2c_master_bus_config_t bus_config = {
         .i2c_port = I2C_NUM_0,
@@ -142,6 +144,9 @@ esp_err_t init(SystemHealth &sys_health) {
         ESP_LOGW(TAG, "Port expander 'set direction' failed with error: %s", esp_err_to_name(ret));
         return ret;
     }
+
+ */
+    io_expander_ = I2CManager::getInstance().getIoExpander();
     sys_health.port_expander = true;
 
     esp_io_expander_print_state(io_expander_);

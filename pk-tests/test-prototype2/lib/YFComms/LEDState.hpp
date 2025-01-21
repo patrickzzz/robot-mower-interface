@@ -56,14 +56,15 @@ namespace YFComms {
         // Set all LEDs to a specific state
         void setStates(LEDStateEnum state);
 
-        // Debugging: Print the state of all LEDs to the console
-        void printStates() const;
+        // Check if the state of any LED has been updated
+        bool getIsUpdated() const { return isUpdated; }
+        void setIsUpdated(bool updated) { isUpdated = updated; }
 
     private:
+        // isUpdated flag, as long as LEDs are only either set on Serial or GPIO, one flag is enough
+        bool isUpdated = false;
+
         // Array to store the state of all LEDs
         std::array<LEDStateEnum, static_cast<size_t>(LED::MAX)> ledStates;
-
-        // Helper function: Convert LED state to readable text
-        static const char* stateToString(LEDStateEnum state);
     };
 } // namespace YFComms
