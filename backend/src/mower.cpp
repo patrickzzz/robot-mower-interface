@@ -195,7 +195,7 @@ void saveMowingPlan(MowingPlan plan) {
 
   file.close();
 
-  currentMowingPlan = loadMowingPlan();
+  loadMowingPlan();
 }
 
 MowingPlan loadMowingPlan() {
@@ -230,6 +230,9 @@ MowingPlan loadMowingPlan() {
   }
 
   file.close();
+
+  currentMowingPlan = plan;
+
   return plan;
 }
 

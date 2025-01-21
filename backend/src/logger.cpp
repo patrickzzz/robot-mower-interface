@@ -9,13 +9,15 @@ bool logResetInProgress = false;
 int debugLevel = 2;
 
 bool initializeLogger() {
+  /*
   if (SPIFFS.exists("/log-messages.txt")) {
     SPIFFS.remove("/log-messages.txt");
   }
+  */
 
-  logFile = SPIFFS.open("/log-messages.txt", "w");
+  logFile = SPIFFS.open("/log-messages.txt", "a");
   if (logFile) {
-    logMessage("Logfile created.", 2);
+    logMessage("Initialized Log.", 2);
     return true;
   } else {
     Serial.println("Failed to create log file");
