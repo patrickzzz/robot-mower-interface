@@ -21,6 +21,7 @@
 #include "bhs_sensors.hpp"
 #include "config.h"
 #include "pins.h"
+#include "MyButtonHandler.hpp"
 
 static const char* TAG = "Robot Mower Interface";
 
@@ -98,6 +99,11 @@ extern "C" void app_main(void) {
     YFComms::CoverUIController coverUIController("GPIO");
     coverUIController.initialize();
 
+    MyButtonHandler myButtonHandler;
+
+    // add Button Event Observer
+    coverUIController.getButtonState().addObserver(&myButtonHandler);
+
     // enable leds
     coverUIController.getLEDState()
         .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
@@ -120,9 +126,9 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
 
-    vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
+    // vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
     // switch to 500c and update led states there as well..
-    coverUIController.changeModel("500Classic");
+    // coverUIController.changeModel("500Classic");
 
     ESP_LOGI(TAG, "Start");
     while(1) {

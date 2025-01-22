@@ -3,9 +3,13 @@
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include <chrono>
+#include <esp_timer.h>
+#include <vector>
+#include <algorithm>
+#include "IButtonEventObserver.hpp"
 
 namespace YFComms {
-    // All possible buttons
     enum class Button : uint8_t {
         PLAY,
         HOME,
@@ -28,7 +32,6 @@ namespace YFComms {
         MAX
     };
 
-    // All possible button states
     enum class ButtonStateEnum : uint8_t {
         RELEASED = 0x00,
         PRESSED = 0x01
@@ -36,25 +39,29 @@ namespace YFComms {
 
     class ButtonState {
     public:
-        ButtonState(); // Constructor
+        ButtonState();
 
-        // Set state of a Button
         ButtonState& setState(Button button, ButtonStateEnum state);
-
-        // Get state of a Button
         ButtonStateEnum getState(Button button) const;
 
-        // Get all Button states
-        const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
+        uint32_t getPressDuration(Button button) const; // Press-Dauer abrufen
+        void resetPressDuration(Button button);         // Reset der Dauer
 
-        // Check if the state of any Button has been updated
+        const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
         bool getIsUpdated() const { return isUpdated; }
         void setIsUpdated(bool updated) { isUpdated = updated; }
 
+        void addObserver(IButtonEventObserver* observer);
+        void removeObserver(IButtonEventObserver* observer);
+
     private:
         bool isUpdated = false;
-
-        // Array to store the state of all Buttons
         std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)> buttonStates;
+        std::array<uint32_t, static_cast<size_t>(Button::MAX)> pressStartTimes;
+        uint32_t getCurrentTime() const {
+            return static_cast<uint32_t>(esp_timer_get_time() / 1000);
+        }
+        std::vector<IButtonEventObserver*> observers;
+        void notifyObservers(Button button, ButtonStateEnum state, uint32_t duration);
     };
 } // namespace YFComms

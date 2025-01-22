@@ -1,5 +1,4 @@
-#ifndef YF_COMMS_COVER_UI_SERIAL_HPP
-#define YF_COMMS_COVER_UI_SERIAL_HPP
+#pragma once
 
 #include <vector>
 #include <string>
@@ -68,4 +67,3 @@ namespace YFComms {
     };
 
 } // namespace YFComms
-#endif // YF_COMMS_COVER_UI_SERIAL_HPP

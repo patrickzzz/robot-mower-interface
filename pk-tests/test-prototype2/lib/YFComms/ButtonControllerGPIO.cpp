@@ -40,22 +40,17 @@ namespace YFComms {
             IO_EXPANDER_PIN_NUM_9 | IO_EXPANDER_PIN_NUM_10 | IO_EXPANDER_PIN_NUM_11 |
             IO_EXPANDER_PIN_NUM_12 | IO_EXPANDER_PIN_NUM_13 | IO_EXPANDER_PIN_NUM_14, &expanderStates);
 
-        //esp_err_t ret = esp_io_expander_get_level(ioExpander, IO_EXPANDER_PIN_NUM_12, &expanderStates);
         if (ret != ESP_OK) {
             ESP_LOGW(TAG, "Failed to read Expander states: %s", esp_err_to_name(ret));
             return;
         }
-
-        //ESP_LOGI(TAG, "Expander States: 0x%04X", static_cast<unsigned int>(expanderStates));
 
         // Process each button
         for (const auto& buttonConfig : boardConfig.getButtonConfigs()) {
             ButtonStateEnum state = ButtonStateEnum::RELEASED;
 
             if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO_EXP) {
-                //ESP_LOGI(TAG, "Checking button %d with expanderPin %d", buttonConfig.buttonIndex, static_cast<int>(buttonConfig.expanderPin));
                 bool isPressed = (expanderStates & buttonConfig.expanderPin) == 0; // Active low
-                //ESP_LOGI(TAG, "Button %d: isPressed=%s", buttonConfig.buttonIndex, isPressed ? "true" : "false");
                 state = isPressed ? ButtonStateEnum::PRESSED : ButtonStateEnum::RELEASED;
             } else if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO) {
                 int level = gpio_get_level(static_cast<gpio_num_t>(buttonConfig.gpioPin));
@@ -63,14 +58,6 @@ namespace YFComms {
             }
 
             buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), state);
-
-            if (state == ButtonStateEnum::PRESSED) {
-                //ESP_LOGI(TAG, "Button %d pressed", buttonConfig.buttonIndex);
-                // log button name instead
-
-            }else{
-            //    ESP_LOGI(TAG, "Button %d released", buttonConfig.buttonIndex);
-            }
         }
     }
 
