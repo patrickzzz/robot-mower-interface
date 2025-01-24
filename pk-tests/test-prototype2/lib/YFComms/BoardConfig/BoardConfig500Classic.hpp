@@ -44,6 +44,7 @@ namespace YFComms {
             buttonConfigs = {
                 {static_cast<uint8_t>(Button::PLAY), BoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF},
                 {static_cast<uint8_t>(Button::HOME), BoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF},
+                {static_cast<uint8_t>(Button::LOCK), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 3},
             };
         }
 

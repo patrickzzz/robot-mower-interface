@@ -13,7 +13,7 @@ namespace YFComms {
         }
     }
 
-    ButtonState& ButtonState::setState(Button button, ButtonStateEnum state) {
+    ButtonState& ButtonState::setState(Button button, ButtonStateEnum state, bool isDebounced) {
         auto index = static_cast<size_t>(button);
         if (index >= buttonStates.size()) return *this;
 
@@ -24,8 +24,8 @@ namespace YFComms {
             uint32_t pressDuration = getCurrentTime() - pressStartTimes[index];
 
             // Debounce: Ignore, if pressDuration is too short (15ms)
-            if (pressDuration < 15) {
-                ESP_LOGI(TAG, "Ignored short press (debounced)");
+            if (!isDebounced && pressDuration < 15) {
+                ESP_LOGI(TAG, "Ignored short press (debounced) on button %d", static_cast<uint8_t>(button));
             }else{
                 notifyObservers(button, state, pressDuration);
             }

@@ -96,7 +96,7 @@ extern "C" void app_main(void) {
 
 
     // create coverUIController for 40 pin gpio
-    YFComms::CoverUIController coverUIController("GPIO");
+    YFComms::CoverUIController coverUIController("500Classic");
     coverUIController.initialize();
 
     MyButtonHandler myButtonHandler;
@@ -107,7 +107,8 @@ extern "C" void app_main(void) {
     // enable leds
     coverUIController.getLEDState()
         .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON);
+        /*
         .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_SLOW)
@@ -125,11 +126,13 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
+         */
 
-    // vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
+/*
+     vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
     // switch to 500c and update led states there as well..
-    // coverUIController.changeModel("500Classic");
-
+    coverUIController.changeModel("500Classic");
+*/
     ESP_LOGI(TAG, "Start");
     while(1) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)

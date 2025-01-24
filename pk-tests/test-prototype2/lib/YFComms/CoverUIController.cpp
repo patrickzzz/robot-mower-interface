@@ -53,7 +53,7 @@ namespace YFComms {
         ESP_LOGI(TAG, "Setting up communication handler...");
         if(boardConfig->hasSerialCommunication()) {
             if(!yfCoverUIControllerUART) {
-                yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, *boardConfig);
+                yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, buttonState, *boardConfig);
             }
             yfCoverUIControllerUART->start();
         }

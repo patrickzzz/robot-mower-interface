@@ -41,7 +41,7 @@ namespace YFComms {
     public:
         ButtonState();
 
-        ButtonState& setState(Button button, ButtonStateEnum state);
+        ButtonState& setState(Button button, ButtonStateEnum state, bool isDebounced = false);
         ButtonStateEnum getState(Button button) const;
 
         uint32_t getPressDuration(Button button) const; // Press-Dauer abrufen
