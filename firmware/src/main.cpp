@@ -20,23 +20,22 @@
 #include "config.h"
 #include "pins.h"
 // #include "YFCommsCoverUISerial.hpp"
-// AH #include "CoverUIController.hpp"
+#include "CoverUIController.hpp"
 #include "bhs_sensors.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
 
 static const char* TAG = "Robot Mower Interface";
 
-// @patrickzzz: How's using these dev switches in main as long as we mix up code and testing?
+// @patrickzzz: How's using these dev switches in main as long as we have mix up code for testing?
 // Define developer flags for debugging and testing
 // #define DEV_PK
 #define DEV_AH
-static const int RX_BUF_SIZE = 512;
 
 // OnBoard status LEDs
 LedSequencer led_grn_seq(pinLedGreen);
 LedSequencer led_red_seq(pinLedRed);
 
-// We always have one Mainboard Device/Interface
+// We always have one (and only one) Mainboard Device/Interface
 mainboards::MainboardInterface* mainboard;
 
 SystemHealth sys_health = {};
@@ -55,45 +54,6 @@ void LedsTask(void* arg) {
         vTaskDelay(ledsTaskCycle / portTICK_PERIOD_MS);
     }
 }
-
-#ifdef DEV_AH
-
-int sendData(const char* logName, const uint8_t* data, size_t len) {
-    const int txBytes = uart_write_bytes(UART_NUM_2, data, len);
-    ESP_LOGI(logName, "Wrote %d bytes", txBytes);
-    return txBytes;
-}
-
-static void tx_task(void* arg) {
-    static const char* TX_TASK_TAG = "TX_TASK";
-    esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
-    const uint8_t data[9] = {0x55, 0xAA, 0x02, 0x0, 0x62, 0xB3, 0x55, 0xAA, 0x0};
-    while (1) {
-        sendData(TX_TASK_TAG, data, 9);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-    }
-}
-
-/*static void rx_task(void* arg) {
-    static const char* RX_TASK_TAG = "RX_TASK";
-    esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
-    uint8_t* data = (uint8_t*)malloc(RX_BUF_SIZE + 1);
-    while (1) {
-        const int rxBytes = uart_read_bytes(UART_NUM_2, data, RX_BUF_SIZE, 1000 / portTICK_PERIOD_MS);
-        if (rxBytes > 0) {
-            data[rxBytes] = 0;
-            ESP_LOGI(RX_TASK_TAG, "Read %d bytes: '%s'", rxBytes, data);
-            ESP_LOG_BUFFER_HEXDUMP(RX_TASK_TAG, data, rxBytes, ESP_LOG_INFO);
-        }
-    }
-    free(data);
-}*/
-
-#endif
-
-
-// ----------
-
 
 extern "C" void app_main(void) {
     vTaskDelay(2000 / portTICK_PERIOD_MS);  // Spiritless delay for monitor. Delay depends on host PCs performance. Increase if necessary.
@@ -141,25 +101,18 @@ extern "C" void app_main(void) {
 
     // Create BHS_Task with a very low priority for reading and debouncing all (port expander & GPIO) buttons
     TaskHandle_t bhs_sensors_task_handle = NULL;
-    xTaskCreate(bhs_sensors::task, "BHSS_Task", 4096, NULL, 2, &bhs_sensors_task_handle);
+    xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 2, &bhs_sensors_task_handle);
 
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
-    // @patrickzzz: Putting such object into global/static memory i.e. via singleton pattern would be much saver but would also require to decide for a mainboard model during init time.
     mainboard = new mainboards::MainboardDriverOM(UART_NUM_2, pinUartOMRx, pinUartOMTx, nullptr);  // CB not implemented yet
     if (esp_err_t ret = mainboard->init() != ESP_OK) {
         ESP_LOGE(TAG, "MainboardDriverOM->init() failed with error: %s", esp_err_to_name(ret));
         led_red_seq.blink({.limit_blink_cycles = 5, .fulfill = true, .repeat = true});
         return;  // Other tasks will still run!
     }
-
-    // This would destroy/release this mainboard instance for the case that live-switching to another mainboard is planned (and will probably fragment the heap)
+    // This would destroy/release this mainboard instance (and will probably fragment the heap)
     // delete mainboard;
-
-    TaskHandle_t rx_task_handle = NULL;
-    TaskHandle_t tx_task_handle = NULL;
-    // xTaskCreate(rx_task, "uart_rx_task", 4096, NULL, configMAX_PRIORITIES - 1, &rx_task_handle);
-    xTaskCreate(tx_task, "uart_tx_task", 4096, NULL, configMAX_PRIORITIES - 2, &tx_task_handle);
 
 #ifdef DEV_PK
     // create coverUIController for 40 pin gpio
@@ -201,6 +154,7 @@ extern "C" void app_main(void) {
 #endif
 
 #ifdef DEV_AH
+    const uint8_t cobs_test_data[] = {0x55, 0xAA, 0x02, 0x0, 0x62, 0xB3, 0x55, 0xAA, 0x0};
     while (1) {
         // app_main task "alive" flash
         led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
@@ -221,12 +175,15 @@ extern "C" void app_main(void) {
 
         // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
 
+        // Send two short COBS test-messages
+        const int txBytes = uart_write_bytes(UART_NUM_2, cobs_test_data, sizeof(cobs_test_data) / sizeof(cobs_test_data[0]));
+        ESP_LOGI(TAG, "Send %d bytes COBS test", txBytes);
+
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
 
         // Let's output some task/stack critical values to be monitored during development
-        ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d, BHS-Sensors_Task %d, rx_task %d, tx_task %d",
-                 uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle),
-                 uxTaskGetStackHighWaterMark(rx_task_handle), uxTaskGetStackHighWaterMark(tx_task_handle));
+        ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d, BHS-Sensors_Task %d",
+                 uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
     }
 #endif
 }
