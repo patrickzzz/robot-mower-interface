@@ -7,14 +7,14 @@ void SetupPins();
 
 // ----- UARTs -----
 // YF-Rev6-A Plug
-constexpr int UART_R6A_RX_PIN = 18;
-constexpr int UART_R6A_TX_PIN = 17;
+constexpr gpio_num_t pinUartR6ARx = GPIO_NUM_18;
+constexpr gpio_num_t pinUartR6ATx = GPIO_NUM_17;
 // YF-Rev6-B Plug
-constexpr int UART_R6B_RX_PIN = 38;
-constexpr int UART_R6B_TX_PIN = 37;
+constexpr gpio_num_t pinUartR6BRx = GPIO_NUM_38;
+constexpr gpio_num_t pinUartR6BTx = GPIO_NUM_37;
 // OM-UI-Board Plug
-constexpr int UART_OM_RX_PIN = 44;
-constexpr int UART_OM_TX_PIN = 43;
+constexpr gpio_num_t pinUartOMRx = GPIO_NUM_44;
+constexpr gpio_num_t pinUartOMTx = GPIO_NUM_43;
 
 // ----- Port Expander (TCA9555). See usage example in bhs_sensors.hpp -----
 constexpr uint8_t portExpAddr = 0x20;

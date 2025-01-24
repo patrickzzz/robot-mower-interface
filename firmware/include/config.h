@@ -2,10 +2,9 @@
 
 #include <freertos/FreeRTOS.h>
 
-constexpr TickType_t ledsTaskCycle = 10;  // How long to suspend the LEDs-Task in ms
+#include "driver/uart.h"
 
-constexpr int UART_R6X_BAUD_RATE = 115200;
-constexpr int UART_OM_BAUD_RATE = 115200;
+constexpr TickType_t ledsTaskCycle = 10;  // How long to suspend the LEDs-Task in ms
 
 /**
  * @brief SystemHealth bitfield is for indicating if every system specific is healthy.
@@ -15,4 +14,5 @@ constexpr int UART_OM_BAUD_RATE = 115200;
 struct SystemHealth {
     bool port_expander_i2c : 1;  // I2C for port expander okay
     bool port_expander : 1;      // Port expander TCA9555 okay
+    bool mainboard_device: 1;    // Mainboard device created and initialized
 };

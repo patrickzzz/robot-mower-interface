@@ -1,9 +1,0 @@
-# Name,   Type, SubType, Offset,   Size, Flags
-# Note1: if you have increased the bootloader size, make sure to update the offsets to avoid overlap
-# Note2: bootloader and partition-table don't get listed here, but also consume 36k
-nvs,      data, nvs,     ,        16K,
-otadata,  data, ota,     ,        8K,
-phy_init, data, phy,     ,        4K,
-factory,  app,  factory, ,        1300k,
-ota_0,    app,  ota_0,   ,        1300K,
-ota_1,    app,  ota_1,   ,        1300K,
