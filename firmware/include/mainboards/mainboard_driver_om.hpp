@@ -19,17 +19,20 @@
 
 #include <stdint.h>
 
-#include "cobs.h" // See https://github.com/PatrickBaus/COBS-CPP
+#include "CRC.h"
+#include "cobs.h"  // See https://github.com/PatrickBaus/COBS-CPP
 #include "esp_log.h"
 #include "mainboard_abstract_uart.hpp"
+#include "proto_openmower.h"
 
-namespace mainboards {
+namespace mainboard_om {
+constexpr char TAG[] = "mainboard_om";
 
 constexpr int baud = 115200;
 constexpr size_t rx_pkt_buf_size = 100;               // UART receive buffer size
 constexpr size_t rx_cobs_buf_size = rx_pkt_buf_size;  // COBS receive buffer size
 
-class MainboardDriverOM : public MainboardAbstractUART {
+class MainboardDriverOM : public mainboards::MainboardAbstractUART {
    public:
     MainboardDriverOM(const uart_port_t port, const gpio_num_t rx_pin, const gpio_num_t tx_pin, const void* on_event_cb)
         : MainboardAbstractUART(port, rx_pin, tx_pin, on_event_cb, baud) {}
@@ -160,25 +163,49 @@ class MainboardDriverOM : public MainboardAbstractUART {
             if (cobs_pos >= rx_cobs_buf_size) {
                 // Buffer full without getting a COBS-end marker. Throw away cons_rx_buffer and reset.
                 cobs_pos = 0;
-                led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Short comms error flash
+                led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Short "comms error" flash
                 continue;
             }
         }
     }
 
     /**
-     * @brief On COBS packet receive get called by onUartReceive once a COBS packet got received.
-     *        It decodes the COBS packet, checks the packet crc, and calls onMessageReceiveCB_.
+     * @brief On COBS packet receive get called by onUartReceive once a COBS encoded packet got received.
+     *        It decodes the COBS packet, checks the packet size, packet CRC, and calls onMessageReceiveCB_ (not yet implemented).
      *
-     * @param size
+     * @param size inclusive prefixed COBS overhead byte, without the COBS-end marker
      */
     void onCobsPacketReceive(const size_t size) {
-        ESP_LOGI(TAG, "onCobsPacketReceive() %d bytes", size);
-        ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+        // ESP_LOGI(TAG, "onCobsPacketReceive() %d bytes", size);
+        // ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
 
+        // Decode COBS packet
         cobs::decode(cobs_rx_buffer, size);
-        ESP_LOGI(TAG, "Decoded COBs packet:");
-        ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+        // ESP_LOGI(TAG, "Decoded COBs packet:");
+        // ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+
+        // Sanity check
+        if (size < 4) {                                                     // COBS-prefix + 1 byte data + 2 byte CRC
+            led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Short "comms error" flash
+            ESP_LOGW(TAG, "COBS packet too short");
+            return;
+        }
+
+        // Caluculate CRC
+        uint16_t crc = CRC::Calculate(cobs_rx_buffer + 1, size - 3, CRC::CRC_16_CCITTFALSE());  // Without COBS-prefix and CRC
+        // ESP_LOGI(TAG, "Calculated crc 0x%x", crc);
+
+        // Packet TYPE selection via ifthen because switch/case is not working with the different message assignments
+        if (cobs_rx_buffer[1] == TYPE::Set_LEDs && size - 1 == sizeof(struct msg_set_leds)) {
+            struct msg_set_leds* message = (struct msg_set_leds*)(cobs_rx_buffer + 1);
+            if (crc != message->crc) {
+                ESP_LOGW(TAG, "Wrong 'Set_LEDs' packet CRC 0x%x != 0x%x (calculated)", message->crc, crc);
+                return;
+            }
+            ESP_LOGI(TAG, "Received 'Set_LEDs' packet with leds 0x%llx", message->leds);
+        } else {
+            ESP_LOGW(TAG, "Unknown or wrong sized packet type 0x%x", cobs_rx_buffer[1]);
+        }
 
         // Decode and handle packet
         // Prepare packet for onMessageReceiveCB_
@@ -192,4 +219,4 @@ class MainboardDriverOM : public MainboardAbstractUART {
     }
 };
 
-}  // namespace mainboards
+}  // namespace mainboard_om

@@ -105,7 +105,7 @@ extern "C" void app_main(void) {
 
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
-    mainboard = new mainboards::MainboardDriverOM(UART_NUM_2, pinUartOMRx, pinUartOMTx, nullptr);  // CB not implemented yet
+    mainboard = new mainboard_om::MainboardDriverOM(UART_NUM_2, pinUartOMRx, pinUartOMTx, nullptr);  // CB not implemented yet
     if (esp_err_t ret = mainboard->init() != ESP_OK) {
         ESP_LOGE(TAG, "MainboardDriverOM->init() failed with error: %s", esp_err_to_name(ret));
         led_red_seq.blink({.limit_blink_cycles = 5, .fulfill = true, .repeat = true});
@@ -154,8 +154,6 @@ extern "C" void app_main(void) {
 #endif
 
 #ifdef DEV_AH
-    //const uint8_t cobs_test_data[] = {0x55, 0xAA, 0x02, 0x0, 0x62, 0xB3, 0x55, 0xAA, 0x0};
-    const uint8_t cobs_test_data[] = {0x03, 0x11, 0x22, 0x02, 0x33, 0x00, 0x05, 0x11, 0x22, 0x33, 0x44, 0x00};
     while (1) {
         // app_main task "alive" flash
         led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
@@ -175,10 +173,6 @@ extern "C" void app_main(void) {
         if (bhs_state.btn_hr_44) ESP_LOGI(TAG, "44h button pressed");
 
         // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
-
-        // Send two short COBS test-messages
-        const int txBytes = uart_write_bytes(UART_NUM_2, cobs_test_data, sizeof(cobs_test_data) / sizeof(cobs_test_data[0]));
-        ESP_LOGI(TAG, "Send %d bytes COBS test", txBytes);
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
 
