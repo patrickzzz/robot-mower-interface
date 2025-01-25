@@ -26,11 +26,6 @@
 
 static const char* TAG = "Robot Mower Interface";
 
-// @patrickzzz: How's using these dev switches in main as long as we have mix up code for testing?
-// Define developer flags for debugging and testing
-// #define DEV_PK
-#define DEV_AH
-
 // OnBoard status LEDs
 LedSequencer led_grn_seq(pinLedGreen);
 LedSequencer led_red_seq(pinLedRed);
