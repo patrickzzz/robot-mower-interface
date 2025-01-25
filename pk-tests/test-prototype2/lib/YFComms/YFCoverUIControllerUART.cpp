@@ -122,16 +122,15 @@ namespace YFComms {
             // 55 AA 03 50 84 0D E3 <= Some status message (50 84, also comes from maiboard)
             // only show 50 00 (button release) and 50 62 button press states
             if (messageBuffer[3] == 0x50 && messageBuffer[4] == 0x00) {
-            } else if (messageBuffer[3] == 0x50 && messageBuffer[4] == 0x62) {
-            } else {
-                return true;
-            }
-            if(messageBuffer[3] == 0x50 && messageBuffer[4] == 0x62 && messageBuffer[messageLength -1] == 0xC0) {
+                return true;    // button release confirmation
+            } else if (messageBuffer[3] == 0x50 && messageBuffer[4] == 0x84) {
+                return true;    // ignore for now some status message
+            } else if (messageBuffer[3] == 0x40 && messageBuffer[4] == 0x01) {
+                return true;    // ignore also hand shake frame ping, that comes up now and then
+            } else if(messageBuffer[3] == 0x50 && messageBuffer[4] == 0x62) {
                 updateButtonState(messageBuffer, messageLength);
                 return true;
             }
-
-            updateButtonState(messageBuffer, messageLength);
 
             std::string hexMessage;
             int i = 0;
@@ -145,8 +144,13 @@ namespace YFComms {
                 }
             }
 
-            ESP_LOGI("UART Received", "%s", hexMessage.c_str());
-            // ...
+            ESP_LOGI("UART Received", "Unknown: %s", hexMessage.c_str());
+            /*
+                log of more messages found:
+                55 AA 02 FF FA FA => after some kind of error, leds went off.. but on button click, at least this came.
+
+             */
+
             return true;
         }
 
@@ -375,11 +379,15 @@ namespace YFComms {
     void YFCoverUIControllerUART::updateButtonState(char *messageBuffer, int &messageLength) {
         for (const auto& buttonConfig : boardConfig.getButtonConfigs()) {
             if (buttonConfig.commType == BoardConfig::CommunicationType::UART) {
+                if(buttonConfig.uartMessagePos > messageLength - 7) {
+                    ESP_LOGW(TAG, "Message length is too short for button state update: %d", messageLength);
+                    return;
+                }
                 uint8_t buttonStateValue = static_cast<uint8_t>(messageBuffer[5 + buttonConfig.uartMessagePos]);
                 if(buttonStateValue == 0x00) {
-                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::RELEASED, true);
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::RELEASED, 20);
                 }else if(buttonStateValue == 0x02) {
-                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::PRESSED, true);
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::PRESSED, 20);
                 }
             }
         }

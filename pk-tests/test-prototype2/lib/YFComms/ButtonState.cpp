@@ -8,31 +8,18 @@ namespace YFComms {
         for (auto& state : buttonStates) {
             state = ButtonStateEnum::RELEASED;
         }
-        for (auto& time : pressStartTimes) {
-            time = 0;
-        }
     }
 
-    ButtonState& ButtonState::setState(Button button, ButtonStateEnum state, bool isDebounced) {
+    ButtonState& ButtonState::setState(Button button, ButtonStateEnum state, uint32_t duration) {
         auto index = static_cast<size_t>(button);
         if (index >= buttonStates.size()) return *this;
+        if (buttonStates[index] == state) return *this;
 
-        if (state == ButtonStateEnum::PRESSED && buttonStates[index] == ButtonStateEnum::RELEASED) {
-            pressStartTimes[index] = getCurrentTime();
-            notifyObservers(button, state, 0);
-        } else if (state == ButtonStateEnum::RELEASED && buttonStates[index] == ButtonStateEnum::PRESSED) {
-            uint32_t pressDuration = getCurrentTime() - pressStartTimes[index];
-
-            // Debounce: Ignore, if pressDuration is too short (15ms)
-            if (!isDebounced && pressDuration < 15) {
-                ESP_LOGI(TAG, "Ignored short press (debounced) on button %d", static_cast<uint8_t>(button));
-            }else{
-                notifyObservers(button, state, pressDuration);
-            }
-        }
-
+        // Update Zustand und Observer benachrichtigen
         buttonStates[index] = state;
-        isUpdated = true;
+
+        notifyObservers(button, state, duration);
+
         return *this;
     }
 
@@ -42,21 +29,6 @@ namespace YFComms {
             return buttonStates[index];
         }
         return ButtonStateEnum::RELEASED;
-    }
-
-    uint32_t ButtonState::getPressDuration(Button button) const {
-        auto index = static_cast<size_t>(button);
-        if (index < pressStartTimes.size()) {
-            return getCurrentTime() - pressStartTimes[index];
-        }
-        return 0;
-    }
-
-    void ButtonState::resetPressDuration(Button button) {
-        auto index = static_cast<size_t>(button);
-        if (index < pressStartTimes.size()) {
-            pressStartTimes[index] = 0;
-        }
     }
 
     const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& ButtonState::getStates() const {

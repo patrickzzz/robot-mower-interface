@@ -67,6 +67,7 @@ constexpr esp_io_expander_pin_num_t expPinLift = IO_EXPANDER_PIN_NUM_2;
 constexpr esp_io_expander_pin_num_t expPinLiftX = IO_EXPANDER_PIN_NUM_3;
 constexpr esp_io_expander_pin_num_t expPinBumpL = IO_EXPANDER_PIN_NUM_4;
 constexpr esp_io_expander_pin_num_t expPinBumpR = IO_EXPANDER_PIN_NUM_5;
+
 constexpr esp_io_expander_pin_num_t expPinBtnHome = IO_EXPANDER_PIN_NUM_6;
 constexpr esp_io_expander_pin_num_t expPinShellStop1 = IO_EXPANDER_PIN_NUM_7;
 constexpr esp_io_expander_pin_num_t expPinBtnLock = IO_EXPANDER_PIN_NUM_8;
@@ -120,6 +121,7 @@ constexpr gpio_num_t coverUILeds[] = {
     pinLedLifted, pinLedConnect, pinLedBattery, pinLedCharge};
 
 // Nearly all buttons are connected to the port expander. See usage in bhs_sensors.hpp
+
 constexpr esp_io_expander_pin_num_t expPinStop2 = IO_EXPANDER_PIN_NUM_0;
 constexpr esp_io_expander_pin_num_t expPinLiftX = IO_EXPANDER_PIN_NUM_1;
 constexpr esp_io_expander_pin_num_t expPinBumpL = IO_EXPANDER_PIN_NUM_2;
@@ -128,6 +130,7 @@ constexpr esp_io_expander_pin_num_t expPinBumpR = IO_EXPANDER_PIN_NUM_4;
 constexpr esp_io_expander_pin_num_t expPinLift = IO_EXPANDER_PIN_NUM_5;
 constexpr esp_io_expander_pin_num_t expPinShellStop1 = IO_EXPANDER_PIN_NUM_6;
 constexpr esp_io_expander_pin_num_t expPinShellStop2 = IO_EXPANDER_PIN_NUM_7;
+
 constexpr esp_io_expander_pin_num_t expPinBtnHr14 = IO_EXPANDER_PIN_NUM_8;
 constexpr esp_io_expander_pin_num_t expPinBtnHr24 = IO_EXPANDER_PIN_NUM_9;
 constexpr esp_io_expander_pin_num_t expPinBtnHr34 = IO_EXPANDER_PIN_NUM_10;

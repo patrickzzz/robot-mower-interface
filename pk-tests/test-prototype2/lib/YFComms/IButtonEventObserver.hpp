@@ -10,7 +10,9 @@ namespace YFComms {
     class IButtonEventObserver {
     public:
         virtual ~IButtonEventObserver() = default;
-
         virtual void onButtonEvent(Button button, ButtonStateEnum state, uint32_t duration) = 0;
+
+    protected:
+        std::string getButtonName(Button button);
     };
 } // namespace YFComms

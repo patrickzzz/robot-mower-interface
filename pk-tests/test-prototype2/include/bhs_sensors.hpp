@@ -97,7 +97,7 @@ constexpr uint8_t numDebounceStates = 6;
 namespace {  // Anonymous private namespace
 
 // Port expander vars
-static i2c_master_bus_handle_t i2c_handle_ = NULL;
+//static i2c_master_bus_handle_t i2c_handle_ = NULL;
 static esp_io_expander_handle_t io_expander_ = NULL;
 
 // BHS states

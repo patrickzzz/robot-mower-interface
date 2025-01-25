@@ -11,12 +11,14 @@
 
 namespace YFComms {
     enum class Button : uint8_t {
+        // Buttons
         PLAY,
         HOME,
         LOCK,
-        LIFT,
+        OK,
         S1,
         S2,
+        CLOCK,
         HOURS_TWO,
         HOURS_FOUR,
         HOURS_SIX,
@@ -29,6 +31,19 @@ namespace YFComms {
         DAYS_FRI,
         DAYS_SAT,
         DAYS_SUN,
+
+        // Halls
+        STOP1,
+        STOP2,
+        LIFT,
+        LIFTX,
+        BUMPL,
+        BUMPR,
+
+        // Shell Stop
+        SHELL_STOP1,
+        SHELL_STOP2,
+        // ..
         MAX
     };
 
@@ -41,26 +56,16 @@ namespace YFComms {
     public:
         ButtonState();
 
-        ButtonState& setState(Button button, ButtonStateEnum state, bool isDebounced = false);
+        ButtonState& setState(Button button, ButtonStateEnum state, uint32_t duration);
         ButtonStateEnum getState(Button button) const;
 
-        uint32_t getPressDuration(Button button) const; // Press-Dauer abrufen
-        void resetPressDuration(Button button);         // Reset der Dauer
-
         const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
-        bool getIsUpdated() const { return isUpdated; }
-        void setIsUpdated(bool updated) { isUpdated = updated; }
 
         void addObserver(IButtonEventObserver* observer);
         void removeObserver(IButtonEventObserver* observer);
 
     private:
-        bool isUpdated = false;
         std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)> buttonStates;
-        std::array<uint32_t, static_cast<size_t>(Button::MAX)> pressStartTimes;
-        uint32_t getCurrentTime() const {
-            return static_cast<uint32_t>(esp_timer_get_time() / 1000);
-        }
         std::vector<IButtonEventObserver*> observers;
         void notifyObservers(Button button, ButtonStateEnum state, uint32_t duration);
     };
