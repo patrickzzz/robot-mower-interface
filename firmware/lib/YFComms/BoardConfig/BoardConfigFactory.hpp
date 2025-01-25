@@ -1,3 +1,5 @@
+#pragma once
+
 #include "BoardConfigGPIO.hpp"
 #include "BoardConfig500Classic.hpp"
 

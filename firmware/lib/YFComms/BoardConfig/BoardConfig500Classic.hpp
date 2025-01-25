@@ -42,8 +42,34 @@ namespace YFComms {
             };
 
             buttonConfigs = {
-                {static_cast<uint8_t>(Button::PLAY), BoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF},
-                {static_cast<uint8_t>(Button::HOME), BoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF},
+                // GPIO
+                {static_cast<uint8_t>(Button::PLAY), BoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF, 0xFF},
+                {static_cast<uint8_t>(Button::HOME), BoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF, 0xFF},
+
+                // UART
+                {static_cast<uint8_t>(Button::LOCK), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 3},
+                {static_cast<uint8_t>(Button::S1), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 1},
+                {static_cast<uint8_t>(Button::S2), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 2},
+                {static_cast<uint8_t>(Button::OK), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 4},
+                {static_cast<uint8_t>(Button::CLOCK), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 0},
+                {static_cast<uint8_t>(Button::DAYS_MON), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 5},
+                {static_cast<uint8_t>(Button::DAYS_TUE), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 6},
+                {static_cast<uint8_t>(Button::DAYS_WED), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 7},
+                {static_cast<uint8_t>(Button::DAYS_THR), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 8},
+                {static_cast<uint8_t>(Button::DAYS_FRI), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 9},
+                {static_cast<uint8_t>(Button::DAYS_SAT), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 10},
+                {static_cast<uint8_t>(Button::DAYS_SUN), BoardConfig::CommunicationType::UART, 0xFF, 0xFFFFFFFF, 11},
+
+                // GPIO_EXP
+                {static_cast<uint8_t>(Button::STOP1), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_3, 0xFF},
+                {static_cast<uint8_t>(Button::STOP2), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_0, 0xFF},
+                {static_cast<uint8_t>(Button::LIFT), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_5, 0xFF},
+                {static_cast<uint8_t>(Button::LIFTX), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_1, 0xFF},
+                {static_cast<uint8_t>(Button::BUMPL), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_2, 0xFF},
+                {static_cast<uint8_t>(Button::BUMPR), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_4, 0xFF},
+                // GPIO_EXP SHELL STOP
+                {static_cast<uint8_t>(Button::SHELL_STOP1), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_6, 0xFF},
+                {static_cast<uint8_t>(Button::SHELL_STOP2), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_7, 0xFF},
             };
         }
 

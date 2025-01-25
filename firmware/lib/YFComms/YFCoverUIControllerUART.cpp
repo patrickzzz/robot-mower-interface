@@ -19,8 +19,8 @@ namespace YFComms {
 
     const int YFCoverUIControllerUART::handshakeMessageResponsesCount = sizeof(handshakeMessageResponses) / sizeof(handshakeMessageResponses[0]);
 
-    YFCoverUIControllerUART::YFCoverUIControllerUART(LEDState& ledState, const BoardConfig& boardConfig)
-     : ledState(ledState), boardConfig(boardConfig), serialTaskHandle(nullptr) {}
+    YFCoverUIControllerUART::YFCoverUIControllerUART(LEDState& ledState, ButtonState &buttonState, const BoardConfig& boardConfig)
+     : ledState(ledState), buttonState(buttonState), boardConfig(boardConfig), serialTaskHandle(nullptr) {}
 
     void YFCoverUIControllerUART::start() {
         ESP_LOGI(TAG, "Starting YFCoverUIControllerUART");
@@ -34,17 +34,17 @@ namespace YFComms {
         updateLEDStateMessage(true);
     }
 
+    // ToDo: Check to do this in destructor
     void YFCoverUIControllerUART::stop() {
         if (serialTaskHandle != nullptr) {
             vTaskDelete(serialTaskHandle);
             serialTaskHandle = nullptr;
         }
-        stopped = true;
+
+        uart_driver_delete(UART_NUM_1);
     }
 
     void YFCoverUIControllerUART::initializeUart() {
-        uart_driver_delete(UART_NUM_1);
-
         ESP_LOGI(TAG, "Initializing UART");
 
         uart_config_t uart_config = {
@@ -57,7 +57,7 @@ namespace YFComms {
         };
         uart_param_config(UART_NUM_1, &uart_config);
         uart_set_pin(UART_NUM_1, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-        uart_driver_install(UART_NUM_1, MAX_MESSAGE_LENGTH * 2, 0, 0, NULL, 0);
+        uart_driver_install(UART_NUM_1, 1024, 1024, 10, NULL, 0);
     }
 
     void YFCoverUIControllerUART::serialTask(void* pvParameters) {
@@ -70,16 +70,18 @@ namespace YFComms {
         sendStartSequence();
         ESP_LOGI(TAG, "YFCoverUIControllerUART task started");
 
-        stopped = false;
-        while (!stopped) {
+        while (true) {
             if (!handshakeSuccessful) {
                 tryHandshake();
             }
 
-            processCoverUIMessages();
             processMainboardMessages();
 
-            vTaskDelay(25 / portTICK_PERIOD_MS);
+            while(processCoverUIMessages()) {
+                // Process all incoming messages
+            }
+
+            vTaskDelay(75 / portTICK_PERIOD_MS);
         }
     }
 
@@ -101,18 +103,35 @@ namespace YFComms {
             0x55, 0xAA, 0x02, 0x50, 0x62, 0xB3
         });
 
-        // Some status, containing lock state etc.
-        sendMessage({
-            0x55, 0xAA, 0x05, 0x50, 0x84, 0x00, 0xFF, 0x01, 0xD8, 0x01
-        });
+        if(isSecondMessage) {
+            // Some status, containing lock state etc.
+            sendMessage({
+                0x55, 0xAA, 0x05, 0x50, 0x84, 0x00, 0xFF, 0x01, 0xD8, 0x01
+            });
+        }
+        isSecondMessage = !isSecondMessage;
     }
 
-    void YFCoverUIControllerUART::processCoverUIMessages() {
+    bool YFCoverUIControllerUART::processCoverUIMessages() {
         char messageBuffer[MAX_MESSAGE_LENGTH];
         memset(messageBuffer, 0, MAX_MESSAGE_LENGTH);
         int messageLength = 0;
 
-        if (processIncomingSerialMessages(UART_NUM_1, messageBuffer, messageLength)) {
+        if (readNextSerialMessage(UART_NUM_1, messageBuffer, messageLength)) {
+            // 55 AA 03 40 01 00 43 <= Handshake message from CoverUI is coming up again in times, but can be ignored
+            // 55 AA 03 50 84 0D E3 <= Some status message (50 84, also comes from maiboard)
+            // only show 50 00 (button release) and 50 62 button press states
+            if (messageBuffer[3] == 0x50 && messageBuffer[4] == 0x00) {
+                return true;    // button release confirmation
+            } else if (messageBuffer[3] == 0x50 && messageBuffer[4] == 0x84) {
+                return true;    // ignore for now some status message
+            } else if (messageBuffer[3] == 0x40 && messageBuffer[4] == 0x01) {
+                return true;    // ignore also hand shake frame ping, that comes up now and then
+            } else if(messageBuffer[3] == 0x50 && messageBuffer[4] == 0x62) {
+                updateButtonState(messageBuffer, messageLength);
+                return true;
+            }
+
             std::string hexMessage;
             int i = 0;
             for (auto byte : messageBuffer) {
@@ -125,23 +144,27 @@ namespace YFComms {
                 }
             }
 
-            ESP_LOGI("UART Received", "%s", hexMessage.c_str());
+            ESP_LOGI("UART Received", "Unknown: %s", hexMessage.c_str());
+            /*
+                log of more messages found:
+                55 AA 02 FF FA FA => after some kind of error, leds went off.. but on button click, at least this came.
 
-            // ...
+             */
+
+            return true;
         }
+
+        return false;
     }
 
-    bool YFCoverUIControllerUART::processIncomingSerialMessages(uart_port_t uart_num, char *messageBuffer, int &messageLength) {
+    bool YFCoverUIControllerUART::readNextSerialMessage(uart_port_t uart_num, char *messageBuffer, int &messageLength) {
         static char message[MAX_MESSAGE_LENGTH];
         static int currentLength = 0;
-        static TickType_t lastReceiveTime = 0;
 
         uint8_t data[1];
         int length;
 
         while ((length = uart_read_bytes(uart_num, data, 1, 10 / portTICK_PERIOD_MS)) > 0) {
-            lastReceiveTime = xTaskGetTickCount();
-
             if (currentLength == 0 && data[0] != 0x55) {
                 continue; // Message does not start with 0x55
             }
@@ -173,15 +196,6 @@ namespace YFComms {
                 currentLength = 0;
                 memset(message, 0, MAX_MESSAGE_LENGTH);
             }
-        }
-
-        // Check for timeout
-        if ((xTaskGetTickCount() - lastReceiveTime) * portTICK_PERIOD_MS > TIMEOUT_DURATION && currentLength > 0) {
-            ESP_LOGW("UART", "Message complete due to timeout: ");
-            for (int i = 0; i < currentLength; i++) {
-                ESP_LOGW("UART", "0x%02X ", message[i]);
-            }
-            currentLength = 0;
         }
 
         return false;
@@ -278,7 +292,7 @@ namespace YFComms {
         // handshake is initialized and closed by CoverUI
         // so we react to responses of the CoverUI
         while (!handshakeSuccessful) {
-            if (processIncomingSerialMessages(UART_NUM_1, messageBuffer, messageLength)) {
+            if (readNextSerialMessage(UART_NUM_1, messageBuffer, messageLength)) {
                 ESP_LOG_BUFFER_HEX("UART RECEIVED", messageBuffer, messageLength);
                 std::vector<uint8_t> response = getHandshakeResponse(messageBuffer, messageLength);
 
@@ -338,7 +352,7 @@ namespace YFComms {
             hexMessage += hex;
         }
 
-        ESP_LOGI("UART SEND", "%s", hexMessage.c_str());
+        //ESP_LOGI("UART SEND", "%s", hexMessage.c_str());
         uart_write_bytes(UART_NUM_1, (const char*)response.data(), response.size());
     }
 
@@ -360,5 +374,22 @@ namespace YFComms {
         currentLEDMessage = newLEDMessage;
 
         ledState.setIsUpdated(false);
+    }
+
+    void YFCoverUIControllerUART::updateButtonState(char *messageBuffer, int &messageLength) {
+        for (const auto& buttonConfig : boardConfig.getButtonConfigs()) {
+            if (buttonConfig.commType == BoardConfig::CommunicationType::UART) {
+                if(buttonConfig.uartMessagePos > messageLength - 7) {
+                    ESP_LOGW(TAG, "Message length is too short for button state update: %d", messageLength);
+                    return;
+                }
+                uint8_t buttonStateValue = static_cast<uint8_t>(messageBuffer[5 + buttonConfig.uartMessagePos]);
+                if(buttonStateValue == 0x00) {
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::RELEASED, 20);
+                }else if(buttonStateValue == 0x02) {
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::PRESSED, 20);
+                }
+            }
+        }
     }
 } // namespace YFComms
