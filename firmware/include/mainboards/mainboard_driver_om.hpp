@@ -19,12 +19,15 @@
 
 #include <stdint.h>
 
+#include "cobs.h" // See https://github.com/PatrickBaus/COBS-CPP
 #include "esp_log.h"
 #include "mainboard_abstract_uart.hpp"
 
 namespace mainboards {
 
 constexpr int baud = 115200;
+constexpr size_t rx_pkt_buf_size = 100;               // UART receive buffer size
+constexpr size_t rx_cobs_buf_size = rx_pkt_buf_size;  // COBS receive buffer size
 
 class MainboardDriverOM : public MainboardAbstractUART {
    public:
@@ -65,6 +68,7 @@ class MainboardDriverOM : public MainboardAbstractUART {
 
    private:
     TaskHandle_t event_task_handle_ = nullptr;
+    uint8_t cobs_rx_buffer[rx_cobs_buf_size];
 
     /**
      * @brief UART event task handler required by MainboardAbstractUART.
@@ -73,7 +77,6 @@ class MainboardDriverOM : public MainboardAbstractUART {
      * @param arg
      */
     static void uart_event_task(void* arg) {
-        constexpr size_t rx_pkt_buf_size = 200;               // FIXME: 100 byte should be enough. Test when having enough data or testsuite ready
         MainboardDriverOM* caller = (MainboardDriverOM*)arg;  // Caller instance
         uart_event_t event;
         uint8_t* pkt_buf = (uint8_t*)malloc(rx_pkt_buf_size);
@@ -89,9 +92,12 @@ class MainboardDriverOM : public MainboardAbstractUART {
             // Handle UART events
             switch (event.type) {
                 case UART_DATA:
-                    ESP_LOGI(TAG, "[UART DATA]: %d bytes", event.size);
                     uart_read_bytes(caller->port_, pkt_buf, event.size, portMAX_DELAY);
-                    ESP_LOG_BUFFER_HEXDUMP(TAG, pkt_buf, event.size, ESP_LOG_INFO);
+                    // ESP_LOGI(TAG, "[UART DATA]: %d bytes", event.size);
+                    // ESP_LOG_BUFFER_HEXDUMP(TAG, pkt_buf, event.size, ESP_LOG_INFO);
+
+                    // FIXME: The following code should probably go into a separate task with LOWER priority, which might get triggered with a task notification
+                    caller->onUartReceive(pkt_buf, event.size);
                     break;
                 case UART_FIFO_OVF:
                     ESP_LOGW(TAG, "UART_FIFO_OVF");
@@ -128,14 +134,57 @@ class MainboardDriverOM : public MainboardAbstractUART {
         vTaskDelete(NULL);
     }
 
-    void onCobsPacketReceive() {
-        // Decode COBS packet
+    /**
+     * @brief On UART receive get called by uart_event_task once some bytes got received.
+     *        It copies the received bytes into a COBS buffer and check for the COBS-end marker.
+     *
+     * @param rcv_buf
+     * @param rcv_size
+     */
+    void onUartReceive(uint8_t* rcv_buf, size_t rcv_size) {
+        static size_t cobs_pos = 0;
+        // ESP_LOGI(TAG, "onUartReceive: %d bytes", rcv_size);
+        // ESP_LOG_BUFFER_HEXDUMP(TAG, rcv_buf, rcv_size, ESP_LOG_INFO);
+
+        // Process each byte in pkt_buf and extract COBS packet
+        for (size_t i = 0; i < rcv_size; ++i) {
+            uint8_t readbyte = rcv_buf[i];
+            cobs_rx_buffer[cobs_pos] = readbyte;
+            // COBS-end marker
+            if (readbyte == 0) {
+                onCobsPacketReceive(cobs_pos);
+                cobs_pos = 0;
+                continue;
+            }
+            cobs_pos++;
+            if (cobs_pos >= rx_cobs_buf_size) {
+                // Buffer full without getting a COBS-end marker. Throw away cons_rx_buffer and reset.
+                cobs_pos = 0;
+                led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Short comms error flash
+                continue;
+            }
+        }
     }
-    void onPacketReceive() {
+
+    /**
+     * @brief On COBS packet receive get called by onUartReceive once a COBS packet got received.
+     *        It decodes the COBS packet, checks the packet crc, and calls onMessageReceiveCB_.
+     *
+     * @param size
+     */
+    void onCobsPacketReceive(const size_t size) {
+        ESP_LOGI(TAG, "onCobsPacketReceive() %d bytes", size);
+        ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+
+        cobs::decode(cobs_rx_buffer, size);
+        ESP_LOGI(TAG, "Decoded COBs packet:");
+        ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+
         // Decode and handle packet
         // Prepare packet for onMessageReceiveCB_
         // Call onMessageReceiveCB_
     }
+
     bool sendPacket(const void* packet, const size_t size) {
         // COBS encode packet
         // Send packet
