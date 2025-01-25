@@ -101,7 +101,7 @@ extern "C" void app_main(void) {
 
     // Create BHS_Task with a very low priority for reading and debouncing all (port expander & GPIO) buttons
     TaskHandle_t bhs_sensors_task_handle = NULL;
-    xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 2, &bhs_sensors_task_handle);
+    xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 5, &bhs_sensors_task_handle);
 
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
