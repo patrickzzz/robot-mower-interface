@@ -20,17 +20,11 @@ namespace YFComms {
         // Initialize the controller (configure communication, LEDs, buttons)
         void initialize();
 
-        // Update button states (reads from hardware)
-        void updateButtonStates();
-
-        // Update LEDs based on LEDState
-        void updateLEDStates();
-
         // Access LED state
         LEDState& getLEDState();
 
         // Access Button state
-        const ButtonState& getButtonState() const;
+        ButtonState& getButtonState();
 
     private:
         // Board configuration

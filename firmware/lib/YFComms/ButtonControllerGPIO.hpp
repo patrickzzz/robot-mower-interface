@@ -7,6 +7,7 @@
 #include <driver/gpio.h>
 #include "I2CManager.hpp"
 #include "esp_io_expander_tca95xx_16bit/include/esp_io_expander_tca95xx_16bit.h"
+#include <array>
 
 namespace YFComms {
     class ButtonControllerGPIO {
@@ -25,5 +26,7 @@ namespace YFComms {
         const BoardConfig& boardConfig;
         TaskHandle_t buttonTaskHandle;
         esp_io_expander_handle_t ioExpander;
+
+        std::array<uint32_t, static_cast<size_t>(Button::MAX)> lastStateChangeTimes;
     };
 } // namespace YFComms

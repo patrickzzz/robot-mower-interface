@@ -41,26 +41,11 @@ namespace YFComms {
         setupCommunicationHandler();
     }
 
-    void CoverUIController::updateButtonStates() {
-    }
-
-    void CoverUIController::updateLEDStates() {
-        ESP_LOGI(TAG, "Updating LED states...");
-        for (const auto& ledConfig : boardConfig->getLEDConfigs()) {
-            if (ledConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                // GPIO-LED setzen
-                //gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), static_cast<uint8_t>(ledState.getState(static_cast<LED>(ledConfig.ledIndex))) > 0);
-            } else if (ledConfig.commType == BoardConfig::CommunicationType::UART) {
-                //yfCoverUIControllerUART->setLEDStateInMessage(ledConfig.uartMessagePos, ledState.getState(static_cast<LED>(ledConfig.ledIndex)));
-            }
-        }
-    }
-
     LEDState& CoverUIController::getLEDState() {
         return ledState;
     }
 
-    const ButtonState& CoverUIController::getButtonState() const {
+    ButtonState& CoverUIController::getButtonState() {
         return buttonState;
     }
 
@@ -68,7 +53,7 @@ namespace YFComms {
         ESP_LOGI(TAG, "Setting up communication handler...");
         if(boardConfig->hasSerialCommunication()) {
             if(!yfCoverUIControllerUART) {
-                yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, *boardConfig);
+                yfCoverUIControllerUART = std::make_unique<YFCoverUIControllerUART>(ledState, buttonState, *boardConfig);
             }
             yfCoverUIControllerUART->start();
         }

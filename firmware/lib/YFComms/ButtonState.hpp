@@ -3,16 +3,22 @@
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include <chrono>
+#include <esp_timer.h>
+#include <vector>
+#include <algorithm>
+#include "IButtonEventObserver.hpp"
 
 namespace YFComms {
-    // All possible buttons
     enum class Button : uint8_t {
+        // Buttons
         PLAY,
         HOME,
         LOCK,
-        LIFT,
+        OK,
         S1,
         S2,
+        CLOCK,
         HOURS_TWO,
         HOURS_FOUR,
         HOURS_SIX,
@@ -25,10 +31,22 @@ namespace YFComms {
         DAYS_FRI,
         DAYS_SAT,
         DAYS_SUN,
+
+        // Halls
+        STOP1,
+        STOP2,
+        LIFT,
+        LIFTX,
+        BUMPL,
+        BUMPR,
+
+        // Shell Stop
+        SHELL_STOP1,
+        SHELL_STOP2,
+        // ..
         MAX
     };
 
-    // All possible button states
     enum class ButtonStateEnum : uint8_t {
         RELEASED = 0x00,
         PRESSED = 0x01
@@ -36,25 +54,19 @@ namespace YFComms {
 
     class ButtonState {
     public:
-        ButtonState(); // Constructor
+        ButtonState();
 
-        // Set state of a Button
-        ButtonState& setState(Button button, ButtonStateEnum state);
-
-        // Get state of a Button
+        ButtonState& setState(Button button, ButtonStateEnum state, uint32_t duration);
         ButtonStateEnum getState(Button button) const;
 
-        // Get all Button states
         const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
 
-        // Check if the state of any Button has been updated
-        bool getIsUpdated() const { return isUpdated; }
-        void setIsUpdated(bool updated) { isUpdated = updated; }
+        void addObserver(IButtonEventObserver* observer);
+        void removeObserver(IButtonEventObserver* observer);
 
     private:
-        bool isUpdated = false;
-
-        // Array to store the state of all Buttons
         std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)> buttonStates;
+        std::vector<IButtonEventObserver*> observers;
+        void notifyObservers(Button button, ButtonStateEnum state, uint32_t duration);
     };
 } // namespace YFComms

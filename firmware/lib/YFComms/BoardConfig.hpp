@@ -26,6 +26,7 @@ namespace YFComms {
             CommunicationType commType;
             uint8_t gpioPin;
             uint32_t expanderPin;
+            uint8_t uartMessagePos;
         };
 
         virtual ~BoardConfig() = default;
