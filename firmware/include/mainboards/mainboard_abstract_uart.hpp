@@ -86,6 +86,18 @@ class MainboardAbstractUART : public MainboardInterface {
     const int tx_buf_size_;
 
     QueueHandle_t uart_event_queue_;
-};
 
+    /**
+     * @brief Write bytes to the UART- TX ring buffer (either immediately or after enough space is available), and then exit.
+     *        So it will block as long as there's not enough space in the TX ring buffer.
+     *        When there is free space in the TX FIFO buffer, an interrupt service routine (ISR) moves the data from the TX ring buffer to the TX FIFO buffer in the background
+     *
+     * @param buffer
+     * @param size
+     * @return esp_err_t
+     */
+    esp_err_t writeBytes(uint8_t* buffer, size_t size) {
+        return uart_write_bytes(port_, (const char*)buffer, size);
+    }
+};
 }  // namespace mainboards

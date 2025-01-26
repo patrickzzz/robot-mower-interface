@@ -36,7 +36,7 @@ class MainboardInterface {
     MainboardInterface(const void* on_event_cb) : on_event_cb_(on_event_cb) {}
     virtual ~MainboardInterface() {}
 
-    virtual esp_err_t init() = 0;
+    virtual esp_err_t init() = 0;  // Init UART, GPIO, etc.
 
     // These are the standard message which can be sent to an OM-Mainboard. Does they harmonize with what's needed to be send to a YF-Mainboard?
     virtual esp_err_t sendEmergency() = 0;                                            // Planned to grep the related emergencies out of BHS bitfield. Needs to be reconsidered.

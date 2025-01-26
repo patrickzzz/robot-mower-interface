@@ -32,6 +32,7 @@ constexpr char TAG[] = "mainboard_om";
 constexpr int baud = 115200;
 constexpr size_t rx_pkt_buf_size = 100;               // UART receive buffer size
 constexpr size_t rx_cobs_buf_size = rx_pkt_buf_size;  // COBS receive buffer size
+constexpr size_t tx_cobs_buf_size = rx_pkt_buf_size;  // COBS transmit buffer size
 
 class MainboardDriverOM : public mainboards::MainboardAbstractUART {
    public:
@@ -65,13 +66,50 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
         return ESP_OK;
     }
 
+    /**
+     * @brief Prepares the message by adding CRC and encoding it with COBS, then sends it over UART.
+     *
+     * @param message
+     * @param size
+     * @return esp_err_t
+     */
+    esp_err_t sendMessage(const void* message, size_t size) {
+        // Sanity check of message size
+        ESP_RETURN_ON_FALSE(size >= 4, ESP_ERR_INVALID_SIZE, TAG, "Message to small");  // TYPE + >=1 data + 2 byte CRC
+
+        // Copy message to COBS buffer (required because our COBs message is one byte larger than the original message)
+        memcpy(cobs_tx_buffer, message, size);
+
+        // Prepare pointer to data and CRC
+        uint8_t* data_pointer = (uint8_t*)cobs_tx_buffer;
+        uint16_t* crc_pointer = (uint16_t*)(data_pointer + (size - 2));
+
+        // Calc CRC
+        *crc_pointer = CRC::Calculate(cobs_tx_buffer, size - 2, CRC::CRC_16_CCITTFALSE());
+
+        ESP_LOGI(TAG, "Prepared message:");
+        ESP_LOG_BUFFER_HEXDUMP(TAG, data_pointer, size, ESP_LOG_INFO);
+
+        // COBS (in place) encode
+        cobs::encode(data_pointer, size);
+        cobs_tx_buffer[size] = 0;  // Add COBS-end marker
+
+        ESP_LOGI(TAG, "COBS encoded message:");
+        ESP_LOG_BUFFER_HEXDUMP(TAG, data_pointer, size + 1, ESP_LOG_INFO);
+
+        writeBytes(data_pointer, size + 1);  // Send COBS encoded message
+
+        return ESP_OK;
+    }
+
     esp_err_t sendEmergency() override { return true; }
     esp_err_t sendButton(const uint8_t btn_id, const uint16_t duration) override { return true; }
     esp_err_t sendAlive() override { return true; }
 
    private:
     TaskHandle_t event_task_handle_ = nullptr;
-    uint8_t cobs_rx_buffer[rx_cobs_buf_size];
+    uint8_t cobs_rx_buffer[rx_cobs_buf_size];  // FIXME: Should better become static members to save heap overflows and fragmentation
+    uint8_t cobs_tx_buffer[tx_cobs_buf_size];  // FIXME: Should better become static members to save heap overflows and fragmentation
 
     /**
      * @brief UART event task handler required by MainboardAbstractUART.
@@ -180,13 +218,13 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
         // ESP_LOGI(TAG, "onCobsPacketReceive() %d bytes", size);
         //  ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
 
-        // Decode COBS packet
+        // Decode COBS packet (in place)
         cobs::decode(cobs_rx_buffer, size);
         // ESP_LOGI(TAG, "Decoded COBs packet:");
         // ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
 
-        // Sanity check
-        ESP_RETURN_ON_FALSE(size >= 4, ESP_ERR_INVALID_SIZE, TAG, "COBS packet too short");
+        // Sanity check of decoded COBS packet size
+        ESP_RETURN_ON_FALSE(size >= 5, ESP_ERR_INVALID_SIZE, TAG, "COBS packet too short");  // COBS overhead + TYPE + >=1 data + 2 byte CRC
 
         // Caluculate CRC
         uint16_t crc = CRC::Calculate(cobs_rx_buffer + 1, size - 3, CRC::CRC_16_CCITTFALSE());  // Without COBS-prefix and CRC
@@ -194,6 +232,20 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
 
         // Switch on received packet TYPE
         switch (cobs_rx_buffer[1]) {
+            // Get_Version packet get send by OM mainboard every 5 seconds to check if a "UI Board" is available.
+            // We've to response with a Get_Version packet (and our version) within 100ms to signal that we're alive.
+            case TYPE::Get_Version:
+                ESP_RETURN_ON_FALSE(size - 1 == sizeof(struct msg_get_version), ESP_ERR_INVALID_SIZE, TAG, "Invalid 'Get_Version' packet size");
+                {
+                    struct msg_get_version* message = (struct msg_get_version*)(cobs_rx_buffer + 1);
+                    ESP_RETURN_ON_FALSE(crc == message->crc, ESP_ERR_INVALID_CRC, TAG, "Invalid 'Get_Version' packet CRC 0x%x != 0x%x (calculated)", message->crc, crc);
+                    ESP_LOGI(TAG, "Received 'Get_Version' packet with version 0x%x", message->version);
+
+                    // Respond with our version
+                    message->version = firmwareVersion;
+                    sendMessage(message, sizeof(struct msg_get_version));
+                }
+                break;
             case TYPE::Set_LEDs:
                 ESP_RETURN_ON_FALSE(size - 1 == sizeof(struct msg_set_leds), ESP_ERR_INVALID_SIZE, TAG, "Invalid 'Set_LEDs' packet size");
                 {
@@ -210,12 +262,6 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
         // Prepare packet for onMessageReceiveCB_
         // Call onMessageReceiveCB_
         return ESP_OK;
-    }
-
-    bool sendPacket(const void* packet, const size_t size) {
-        // COBS encode packet
-        // Send packet
-        return true;
     }
 };
 

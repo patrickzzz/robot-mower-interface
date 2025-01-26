@@ -18,16 +18,24 @@
 #pragma once
 
 // Protocol Header Info
-enum TYPE
-{
+enum TYPE {
     Get_Version = 0xB0,
     Set_Buzzer = 0xB1,
     Set_LEDs = 0xB2,
     Get_Button = 0xB3,
-    Get_Emergency = 0xB4, // Stock-CoverUI
-    Get_Rain = 0xB5,      // Stock-CoverUI
+    Get_Emergency = 0xB4,  // Stock-CoverUI
+    Get_Rain = 0xB5,       // Stock-CoverUI
     Get_Subscribe = 0xB6
 };
+
+#pragma pack(push, 1)
+struct msg_get_version {
+    uint8_t type = TYPE::Get_Version;  // command type
+    uint8_t reserved;                  // padding
+    uint16_t version;
+    uint16_t crc;  // CRC 16
+} __attribute__((packed));
+#pragma pack(pop)
 
 /**
  * @brief Use this to update the LED matrix
@@ -42,11 +50,10 @@ enum TYPE
  * 0b111 = On
  */
 #pragma pack(push, 1)
-struct msg_set_leds
-{
-    uint8_t type; // command type
-    uint8_t reserved; // padding
+struct msg_set_leds {
+    uint8_t type;      // command type
+    uint8_t reserved;  // padding
     uint64_t leds;
-    uint16_t crc; // CRC 16
+    uint16_t crc;  // CRC 16
 } __attribute__((packed));
 #pragma pack(pop)
