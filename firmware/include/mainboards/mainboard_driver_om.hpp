@@ -21,6 +21,7 @@
 
 #include "CRC.h"
 #include "cobs.h"  // See https://github.com/PatrickBaus/COBS-CPP
+#include "esp_check.h"
 #include "esp_log.h"
 #include "mainboard_abstract_uart.hpp"
 #include "proto_openmower.h"
@@ -49,6 +50,7 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
         ESP_LOGI(TAG, "MainboardDriverOM::init()");
 
         if (esp_err_t ret = MainboardAbstractUART::init() != ESP_OK) {
+            led_red_seq.blink({.limit_blink_cycles = 4, .fulfill = true});
             return ret;
         }
 
@@ -60,8 +62,6 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
             return ESP_FAIL;
         }
 
-        // TODO: COBS buffer (PSRAM? instead if heap? but slower)
-        // TODO: onCobsPacketReceive()
         return ESP_OK;
     }
 
@@ -155,7 +155,8 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
             cobs_rx_buffer[cobs_pos] = readbyte;
             // COBS-end marker
             if (readbyte == 0) {
-                onCobsPacketReceive(cobs_pos);
+                if (onCobsPacketReceive(cobs_pos) != ESP_OK)
+                    led_red_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});  // Short "comms error" flash
                 cobs_pos = 0;
                 continue;
             }
@@ -175,9 +176,9 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
      *
      * @param size inclusive prefixed COBS overhead byte, without the COBS-end marker
      */
-    void onCobsPacketReceive(const size_t size) {
+    esp_err_t onCobsPacketReceive(const size_t size) {
         // ESP_LOGI(TAG, "onCobsPacketReceive() %d bytes", size);
-        // ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
+        //  ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
 
         // Decode COBS packet
         cobs::decode(cobs_rx_buffer, size);
@@ -185,31 +186,30 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
         // ESP_LOG_BUFFER_HEXDUMP(TAG, cobs_rx_buffer, size, ESP_LOG_INFO);
 
         // Sanity check
-        if (size < 4) {                                                     // COBS-prefix + 1 byte data + 2 byte CRC
-            led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Short "comms error" flash
-            ESP_LOGW(TAG, "COBS packet too short");
-            return;
-        }
+        ESP_RETURN_ON_FALSE(size >= 4, ESP_ERR_INVALID_SIZE, TAG, "COBS packet too short");
 
         // Caluculate CRC
         uint16_t crc = CRC::Calculate(cobs_rx_buffer + 1, size - 3, CRC::CRC_16_CCITTFALSE());  // Without COBS-prefix and CRC
         // ESP_LOGI(TAG, "Calculated crc 0x%x", crc);
 
-        // Packet TYPE selection via ifthen because switch/case is not working with the different message assignments
-        if (cobs_rx_buffer[1] == TYPE::Set_LEDs && size - 1 == sizeof(struct msg_set_leds)) {
-            struct msg_set_leds* message = (struct msg_set_leds*)(cobs_rx_buffer + 1);
-            if (crc != message->crc) {
-                ESP_LOGW(TAG, "Wrong 'Set_LEDs' packet CRC 0x%x != 0x%x (calculated)", message->crc, crc);
-                return;
-            }
-            ESP_LOGI(TAG, "Received 'Set_LEDs' packet with leds 0x%llx", message->leds);
-        } else {
-            ESP_LOGW(TAG, "Unknown or wrong sized packet type 0x%x", cobs_rx_buffer[1]);
+        // Switch on received packet TYPE
+        switch (cobs_rx_buffer[1]) {
+            case TYPE::Set_LEDs:
+                ESP_RETURN_ON_FALSE(size - 1 == sizeof(struct msg_set_leds), ESP_ERR_INVALID_SIZE, TAG, "Invalid 'Set_LEDs' packet size");
+                {
+                    struct msg_set_leds* message = (struct msg_set_leds*)(cobs_rx_buffer + 1);
+                    ESP_RETURN_ON_FALSE(crc == message->crc, ESP_ERR_INVALID_CRC, TAG, "Invalid 'Set_LEDs' packet CRC 0x%x != 0x%x (calculated)", message->crc, crc);
+                    ESP_LOGI(TAG, "Received 'Set_LEDs' packet with leds 0x%llx", message->leds);
+                }
+                break;
+            default:
+                ESP_LOGW(TAG, "Unknown or wrong sized packet type 0x%x", cobs_rx_buffer[1]);
+                break;
         }
-
-        // Decode and handle packet
+        // Handle packet
         // Prepare packet for onMessageReceiveCB_
         // Call onMessageReceiveCB_
+        return ESP_OK;
     }
 
     bool sendPacket(const void* packet, const size_t size) {
