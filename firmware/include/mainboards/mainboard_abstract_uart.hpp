@@ -66,23 +66,13 @@ class MainboardAbstractUART : public MainboardInterface {
             .source_clk = UART_SCLK_DEFAULT,
             .flags = {.backup_before_sleep = 0},
         };
-        if (esp_err_t ret = uart_param_config(port_, &uart_config) != ESP_OK) {
-            ESP_LOGE(TAG, "uart_param_config() failed with error: %s", esp_err_to_name(ret));
-            led_red_seq.blink({.limit_blink_cycles = 4, .fulfill = true});
-            return ret;
-        }
+        ESP_RETURN_ON_ERROR(uart_param_config(port_, &uart_config), TAG, "uart_param_config() failed");
+
         // Set RX/TX pins
-        if (esp_err_t ret = uart_set_pin(port_, tx_pin_, rx_pin_, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) != ESP_OK) {
-            ESP_LOGE(TAG, "uart_set_pin() failed with error: %s", esp_err_to_name(ret));
-            led_red_seq.blink({.limit_blink_cycles = 4, .fulfill = true});
-            return ret;
-        }
+        ESP_RETURN_ON_ERROR(uart_set_pin(port_, tx_pin_, rx_pin_, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE), TAG, "uart_set_pin() failed");
+
         // Install UART driver
-        if (esp_err_t ret = uart_driver_install(port_, rx_buf_size_, tx_buf_size_, 10, &uart_event_queue_, 0) != ESP_OK) {
-            ESP_LOGE(TAG, "uart_driver_install() failed with error: %s", esp_err_to_name(ret));
-            led_red_seq.blink({.limit_blink_cycles = 4, .fulfill = true});
-            return ret;
-        }
+        ESP_RETURN_ON_ERROR(uart_driver_install(port_, rx_buf_size_, tx_buf_size_, 10, &uart_event_queue_, 0), TAG, "uart_driver_install() failed");
 
         return ESP_OK;
     }
