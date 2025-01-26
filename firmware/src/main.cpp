@@ -52,7 +52,8 @@ void LedsTask(void* arg) {
 
 extern "C" void app_main(void) {
     vTaskDelay(2000 / portTICK_PERIOD_MS);  // Spiritless delay for monitor. Delay depends on host PCs performance. Increase if necessary.
-    ESP_LOGI(TAG, "app_main()");
+    ESP_LOGI(TAG, "."); // Just to get a new line in the monitor
+    ESP_LOGI(TAG, "Firmware Version %d.%02d", firmwareVersion / 100, firmwareVersion % 100);
 
     // Initialize NVS
     // @patrickzzz Possible to use NVS instead of SPIFFS for your WiFi/WebServer?
