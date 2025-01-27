@@ -26,6 +26,8 @@
 #include "mainboard_abstract_uart.hpp"
 #include "proto_openmower.h"
 
+extern LedSequencer led_red_seq;
+
 namespace mainboard_om {
 constexpr char TAG[] = "mainboard_om";
 

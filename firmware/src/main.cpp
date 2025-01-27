@@ -21,8 +21,6 @@
 #include "pins.h"
 #include "CoverUIController.hpp"
 #include "MyButtonHandler.hpp"
-// ToDo: remove the following 😪
-#include "bhs_sensors.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
 
 static const char* TAG = "Robot Mower Interface";
@@ -88,21 +86,6 @@ extern "C" void app_main(void) {
         return;  // Other tasks will still run!
     }
 
-    /*
-    // Init button, hall & switch sensors lib
-    if (esp_err_t ret = bhs_sensors::init(sys_health) != ESP_OK) {
-        ESP_LOGE(TAG, "ButtonHallSwitch-Sensors lib failed with error: %s", esp_err_to_name(ret));
-        led_red_seq.blink({.limit_blink_cycles = 3, .fulfill = true, .repeat = true});
-        return;  // Other tasks will still run!
-    }
-    sys_health.port_expander = true;
-
-
-    // Create BHS_Task with a very low priority for reading and debouncing all (port expander & GPIO) buttons
-    TaskHandle_t bhs_sensors_task_handle = NULL;
-    xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 5, &bhs_sensors_task_handle);
-    */
-
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
     mainboard = new mainboard_om::MainboardDriverOM(UART_NUM_2, pinUartOMRx, pinUartOMTx, nullptr);  // CB not implemented yet
@@ -163,28 +146,10 @@ extern "C" void app_main(void) {
     while (1) {
         // app_main task "alive" flash
         led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
-/*
-        // How to get (debounced) button, hall or switch state:
-        // Variant 1: Directly check one BHS-Sensor
-        if (bhs_sensors::getState().shell_stop_1) ESP_LOGI(TAG, "Shell-Stop-1 closed");
-
-        // Variant 2: Get State for all BHS-Sensors, and check their state afterwards, also for the possibility to test multiple states at once
-        bhs_sensors::State bhs_state = bhs_sensors::getState();
-        if (bhs_state.shell_stop_2 || bhs_state.btn_play) ESP_LOGI(TAG, "Shell-Stop-2 closed, or Play button pressed");
-        if (bhs_state.btn_home) ESP_LOGI(TAG, "Home button pressed");
-        if (bhs_state.btn_lock) ESP_LOGI(TAG, "Lock button pressed");
-        if (bhs_state.btn_hr_14) ESP_LOGI(TAG, "14h button pressed");
-        if (bhs_state.btn_hr_24) ESP_LOGI(TAG, "24h button pressed");
-        if (bhs_state.btn_hr_34) ESP_LOGI(TAG, "34h button pressed");
-        if (bhs_state.btn_hr_44) ESP_LOGI(TAG, "44h button pressed");
-
-        // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
- */
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
 
         // Let's output some task/stack critical values to be monitored during development
         ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d",
-                 //uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
                  uxTaskGetStackHighWaterMark(leds_task_handle));
     }
 #endif
