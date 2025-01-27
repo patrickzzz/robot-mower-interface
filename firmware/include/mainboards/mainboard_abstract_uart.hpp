@@ -96,7 +96,10 @@ class MainboardAbstractUART : public MainboardInterface {
      * @param size
      * @return esp_err_t
      */
-    esp_err_t writeBytes(uint8_t* buffer, size_t size) {
+    size_t writeBytes(const uint8_t* buffer, size_t size) {
+        // ESP_LOGI(TAG, "writeBytes(): %d bytes", size);
+        // ESP_LOG_BUFFER_HEXDUMP(TAG, buffer, size, ESP_LOG_INFO);
+
         return uart_write_bytes(port_, (const char*)buffer, size);
     }
 };
