@@ -238,7 +238,7 @@ class MainboardDriverOM : public mainboards::MainboardAbstractUART {
                 {
                     struct msg_get_version* message = (struct msg_get_version*)rx_data_buffer;
                     ESP_RETURN_ON_FALSE(crc == message->crc, ESP_ERR_INVALID_CRC, TAG, "Invalid 'Get_Version' packet CRC 0x%x != 0x%x (calculated)", message->crc, crc);
-                    ESP_LOGI(TAG, "Received 'Get_Version' packet with version 0x%x", message->version);
+                    ESP_LOGI(TAG, "Received 'Get_Version' packet with (undefined) version 0x%x", message->version);
 
                     // Respond with our version
                     message->version = firmwareVersion;
