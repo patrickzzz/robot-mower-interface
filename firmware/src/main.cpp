@@ -19,8 +19,9 @@
 #include "LedSequencer.hpp"
 #include "config.h"
 #include "pins.h"
-// #include "YFCommsCoverUISerial.hpp"
 #include "CoverUIController.hpp"
+#include "MyButtonHandler.hpp"
+// ToDo: remove the following 😪
 #include "bhs_sensors.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
 
@@ -87,6 +88,7 @@ extern "C" void app_main(void) {
         return;  // Other tasks will still run!
     }
 
+    /*
     // Init button, hall & switch sensors lib
     if (esp_err_t ret = bhs_sensors::init(sys_health) != ESP_OK) {
         ESP_LOGE(TAG, "ButtonHallSwitch-Sensors lib failed with error: %s", esp_err_to_name(ret));
@@ -95,9 +97,11 @@ extern "C" void app_main(void) {
     }
     sys_health.port_expander = true;
 
+
     // Create BHS_Task with a very low priority for reading and debouncing all (port expander & GPIO) buttons
     TaskHandle_t bhs_sensors_task_handle = NULL;
     xTaskCreate(bhs_sensors::task, "BHSS_Task", 2048, NULL, 5, &bhs_sensors_task_handle);
+    */
 
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
@@ -112,14 +116,20 @@ extern "C" void app_main(void) {
 
 #ifdef DEV_PK
     // create coverUIController for 40 pin gpio
-    YFComms::CoverUIController coverUIController("GPIO");
+    YFComms::CoverUIController coverUIController("500Classic");
     coverUIController.initialize();
+
+    // add Button/Hall Event Observer
+    MyButtonHandler myButtonHandler;
+    coverUIController.getButtonState().addObserver(&myButtonHandler);
 
     // enable leds
     coverUIController.getLEDState()
         .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_SLOW);
+
+        /*
         .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_SLOW)
         .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_SLOW)
@@ -136,10 +146,10 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
-
-    vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
+*/
+ //   vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
     // switch to 500c and update led states there as well..
-    coverUIController.changeModel("500Classic");
+ //   coverUIController.changeModel("500Classic");
 #endif
 
     ESP_LOGI(TAG, "Start");
@@ -153,7 +163,7 @@ extern "C" void app_main(void) {
     while (1) {
         // app_main task "alive" flash
         led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
-
+/*
         // How to get (debounced) button, hall or switch state:
         // Variant 1: Directly check one BHS-Sensor
         if (bhs_sensors::getState().shell_stop_1) ESP_LOGI(TAG, "Shell-Stop-1 closed");
@@ -169,12 +179,13 @@ extern "C" void app_main(void) {
         if (bhs_state.btn_hr_44) ESP_LOGI(TAG, "44h button pressed");
 
         // @patrickzzz If interested I could also add some kind of event functionality for every pressed button. I.e. like calling a predefined button-callback
-
+ */
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
 
         // Let's output some task/stack critical values to be monitored during development
-        ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d, BHS-Sensors_Task %d",
-                 uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
+        ESP_LOGI(TAG, "Task high water mark (free stack words) of: LEDs_Task %d",
+                 //uxTaskGetStackHighWaterMark(leds_task_handle), uxTaskGetStackHighWaterMark(bhs_sensors_task_handle));
+                 uxTaskGetStackHighWaterMark(leds_task_handle));
     }
 #endif
 }
