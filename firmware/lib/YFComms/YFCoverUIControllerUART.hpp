@@ -36,7 +36,7 @@ namespace YFComms {
         TaskHandle_t serialTaskHandle;
         static void serialTask(void* pvParameters);
 
-        void tick();
+        void tickMainboardSimulationMode();
 
         struct HandshakeMessageResponsePair {
             std::vector<uint8_t> expectedMessage;
@@ -52,7 +52,7 @@ namespace YFComms {
         void tryHandshake();
         void processHandshake();
         bool processCoverUIMessages();
-        void processMainboardMessages();
+        void sendMessagesAsMainboardWouldDo();
 
         std::vector<uint8_t> getHandshakeResponse(const char* message, int length);
         bool readNextSerialMessage(uart_port_t uart_num, char* messageBuffer, int& messageLength);

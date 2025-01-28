@@ -22,6 +22,7 @@
 #include "CoverUIController.hpp"
 #include "MyButtonHandler.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
+#include "mainboards/mainboard_driver_yf.hpp"
 
 static const char* TAG = "Robot Mower Interface";
 
@@ -86,6 +87,7 @@ extern "C" void app_main(void) {
         return;  // Other tasks will still run!
     }
 
+#ifdef DEV_AH
     // Example how the MainboardDriver could be used (TBD: when and where)
     // ATTENTION: Object will go into heap, but heap is limited to 4KB in ESP32 and there's no heap fragmentation protection nor heap overflow detection for most MCUs/frameworks
     mainboard = new mainboard_om::MainboardDriverOM(UART_NUM_2, pinUartOMRx, pinUartOMTx, nullptr);  // CB not implemented yet
@@ -96,8 +98,16 @@ extern "C" void app_main(void) {
     }
     // This would destroy/release this mainboard instance (and will probably fragment the heap)
     // delete mainboard;
+#endif
 
 #ifdef DEV_PK
+    mainboard = new mainboard_yf::MainboardDriverYF(UART_NUM_2, pinUartR6ARx, pinUartR6ATx, nullptr);
+    if (esp_err_t ret = mainboard->init() != ESP_OK) {
+        ESP_LOGE(TAG, "MainboardDriverOM->init() failed with error: %s", esp_err_to_name(ret));
+        led_red_seq.blink({.limit_blink_cycles = 5, .fulfill = true, .repeat = true});
+        return;  // Other tasks will still run!
+    }
+
     // create coverUIController for 40 pin gpio
     YFComms::CoverUIController coverUIController("500Classic");
     coverUIController.initialize();

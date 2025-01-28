@@ -63,10 +63,10 @@ namespace YFComms {
     void YFCoverUIControllerUART::serialTask(void* pvParameters) {
         ESP_LOGI(TAG, "Starting YFCoverUIControllerUART serialTask");
         auto* instance = static_cast<YFCoverUIControllerUART*>(pvParameters);
-        instance->tick();
+        instance->tickMainboardSimulationMode();
     }
 
-    void YFCoverUIControllerUART::tick() {
+    void YFCoverUIControllerUART::tickMainboardSimulationMode() {
         sendStartSequence();
         ESP_LOGI(TAG, "YFCoverUIControllerUART task started");
 
@@ -75,7 +75,7 @@ namespace YFComms {
                 tryHandshake();
             }
 
-            processMainboardMessages();
+            sendMessagesAsMainboardWouldDo();
 
             while(processCoverUIMessages()) {
                 // Process all incoming messages
@@ -92,7 +92,7 @@ namespace YFComms {
         ESP_LOGI("MAIN", "Start sequence sent: 0x00 0xFF");
     }
 
-    void YFCoverUIControllerUART::processMainboardMessages() {
+    void YFCoverUIControllerUART::sendMessagesAsMainboardWouldDo() {
         updateLEDStateMessage();
 
         // LED Status Messages
