@@ -48,8 +48,8 @@ namespace YFComms {
     };
 
     enum class ButtonStateEnum : uint8_t {
-        RELEASED = 0x00,
-        PRESSED = 0x01
+        LOW = 0x00,
+        HIGH = 0x01
     };
 
     class ButtonState {

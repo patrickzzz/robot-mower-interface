@@ -53,13 +53,13 @@ namespace YFComms {
             }
 
             // Button State bestimmen (GPIO oder GPIO_EXP)
-            ButtonStateEnum newState = ButtonStateEnum::RELEASED;
+            ButtonStateEnum newState = ButtonStateEnum::LOW;
             if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO_EXP) {
-                bool isPressed = (expanderStates & buttonConfig.expanderPin) == 0; // Active Low
-                newState = isPressed ? ButtonStateEnum::PRESSED : ButtonStateEnum::RELEASED;
+                bool isHigh = (expanderStates & buttonConfig.expanderPin) != 0;
+                newState = isHigh ? ButtonStateEnum::HIGH : ButtonStateEnum::LOW;
             } else if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                int level = gpio_get_level(static_cast<gpio_num_t>(buttonConfig.gpioPin));
-                newState = (level == 0) ? ButtonStateEnum::PRESSED : ButtonStateEnum::RELEASED;
+                bool isHigh = gpio_get_level(static_cast<gpio_num_t>(buttonConfig.gpioPin)) != 0;
+                newState = isHigh ? ButtonStateEnum::HIGH : ButtonStateEnum::LOW;
             }
 
             // Zeitmessung und Debounce
@@ -68,7 +68,7 @@ namespace YFComms {
             uint32_t duration = currentTime - lastChangeTime;
 
             if (newState != buttonState.getState(static_cast<Button>(buttonConfig.buttonIndex))) {
-                if (newState == ButtonStateEnum::RELEASED && duration < 15) {
+                if (newState == ButtonStateEnum::LOW && duration < 15) {
                     ESP_LOGI(TAG, "Debounced short press ignored for button %d", buttonConfig.buttonIndex);
                     continue; // Ignore short releases
                 }

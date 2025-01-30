@@ -385,9 +385,9 @@ namespace YFComms {
                 }
                 uint8_t buttonStateValue = static_cast<uint8_t>(messageBuffer[5 + buttonConfig.uartMessagePos]);
                 if(buttonStateValue == 0x00) {
-                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::RELEASED, 20);
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::LOW, 20);
                 }else if(buttonStateValue == 0x02) {
-                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::PRESSED, 20);
+                    buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), ButtonStateEnum::HIGH, 20);
                 }
             }
         }

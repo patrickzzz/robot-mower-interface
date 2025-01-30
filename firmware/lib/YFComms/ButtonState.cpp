@@ -6,7 +6,7 @@ namespace YFComms {
 
     ButtonState::ButtonState() {
         for (auto& state : buttonStates) {
-            state = ButtonStateEnum::RELEASED;
+            state = ButtonStateEnum::LOW;
         }
     }
 
@@ -28,13 +28,12 @@ namespace YFComms {
         if (index < buttonStates.size()) {
             return buttonStates[index];
         }
-        return ButtonStateEnum::RELEASED;
+        return ButtonStateEnum::LOW;
     }
 
     const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& ButtonState::getStates() const {
         return buttonStates;
     }
-
 
     void ButtonState::addObserver(IButtonEventObserver* observer) {
         if (std::find(observers.begin(), observers.end(), observer) == observers.end()) {
