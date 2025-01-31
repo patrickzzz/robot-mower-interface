@@ -4,9 +4,9 @@
 namespace YFComms {
     constexpr char TAG[] = "YFComms/ButtonState";
 
-    ButtonState::ButtonState() {
+    ButtonState::ButtonState(): observer(nullptr) {
         for (auto& state : buttonStates) {
-            state = ButtonStateEnum::RELEASED;
+            state = ButtonStateEnum::LOW;
         }
     }
 
@@ -18,7 +18,7 @@ namespace YFComms {
         // Update Zustand und Observer benachrichtigen
         buttonStates[index] = state;
 
-        notifyObservers(button, state, duration);
+        notifyObserver(button, state, duration);
 
         return *this;
     }
@@ -28,29 +28,22 @@ namespace YFComms {
         if (index < buttonStates.size()) {
             return buttonStates[index];
         }
-        return ButtonStateEnum::RELEASED;
+        return ButtonStateEnum::LOW;
     }
 
     const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& ButtonState::getStates() const {
         return buttonStates;
     }
 
+    ButtonState& ButtonState::setObserver(IButtonEventObserver* observer) {
+        this->observer = observer;
 
-    void ButtonState::addObserver(IButtonEventObserver* observer) {
-        if (std::find(observers.begin(), observers.end(), observer) == observers.end()) {
-            observers.push_back(observer);
-        }
+        return *this;
     }
 
-    void ButtonState::removeObserver(IButtonEventObserver* observer) {
-        observers.erase(std::remove(observers.begin(), observers.end(), observer), observers.end());
-    }
-
-    void ButtonState::notifyObservers(Button button, ButtonStateEnum state, uint32_t duration) {
-        for (auto observer : observers) {
-            if (observer) {
-                observer->onButtonEvent(button, state, duration);
-            }
+    void ButtonState::notifyObserver(Button button, ButtonStateEnum state, uint32_t duration) {
+        if (observer != nullptr) {
+            observer->onButtonEvent(button, state, duration);
         }
     }
 } // namespace YFComms

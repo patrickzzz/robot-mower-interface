@@ -7,12 +7,7 @@ namespace YFComms {
     LEDControllerGPIO::LEDControllerGPIO(LEDState& ledState, const BoardConfig& boardConfig)
         : ledState(ledState), boardConfig(boardConfig), ledControllerGPIOHandle(nullptr) {
         // Initialize all LEDs to off
-        for (const auto& ledConfig : boardConfig.getLEDConfigs()) {
-            if (ledConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), 0);
-                ledLastStates[ledConfig.ledIndex] = 0; // Initialer Zustand der LED (0 = aus)
-            }
-        }
+        turnOffAllLEDs();
     }
 
     void LEDControllerGPIO::start() {
@@ -27,11 +22,7 @@ namespace YFComms {
             ledControllerGPIOHandle = nullptr;
 
             // Turn off all LEDs
-            for (const auto& ledConfig : boardConfig.getLEDConfigs()) {
-                if (ledConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                    gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), 0);
-                }
-            }
+            turnOffAllLEDs();
         }
     }
 
@@ -53,36 +44,39 @@ namespace YFComms {
     }
 
     void LEDControllerGPIO::updateLEDs(int tickCounter) {
-        for (const auto& ledConfig : boardConfig.getLEDConfigs()) {
-            if (ledConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                LEDStateEnum state = ledState.getState(static_cast<LED>(ledConfig.ledIndex));
+        size_t ledCount;
+        const auto* leds = boardConfig.getLEDConfigs(ledCount);
+
+        for (size_t i = 0; i < ledCount; i++) {
+            if (leds[i].commType == BoardConfig::CommunicationType::GPIO) {
+                LEDStateEnum state = ledState.getState(static_cast<LED>(leds[i].ledIndex));
 
                 switch (state) {
                     case LEDStateEnum::ON:
-                        gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), 1);
-                        ledLastStates[ledConfig.ledIndex] = 1;
+                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 1);
+                        ledLastStates[leds[i].ledIndex] = 1;
                         break;
 
                     case LEDStateEnum::OFF:
-                        gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), 0);
-                        ledLastStates[ledConfig.ledIndex] = 0;
+                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
+                        ledLastStates[leds[i].ledIndex] = 0;
                         break;
 
                     case LEDStateEnum::FLASH_SLOW:
                         if (tickCounter % 12 == 0) {
-                            toggleLED(ledConfig);
+                            toggleLED(leds[i]);
                         }
                         break;
 
                     case LEDStateEnum::FLASH_FAST:
                         if (tickCounter % 5 == 0) {
-                            toggleLED(ledConfig);
+                            toggleLED(leds[i]);
                         }
                         break;
 
                     default:
-                        gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), 0);
-                        ledLastStates[ledConfig.ledIndex] = 0;
+                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
+                        ledLastStates[leds[i].ledIndex] = 0;
                         break;
                 }
             }
@@ -95,5 +89,17 @@ namespace YFComms {
 
         gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), newLevel);
         ledLastStates[ledConfig.ledIndex] = newLevel;
+    }
+
+    void LEDControllerGPIO::turnOffAllLEDs() {
+        size_t ledCount;
+        const auto* leds = boardConfig.getLEDConfigs(ledCount);
+
+        for (size_t i = 0; i < ledCount; i++) {
+            if (leds[i].commType == BoardConfig::CommunicationType::GPIO) {
+                gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
+                ledLastStates[leds[i].ledIndex] = 0;
+            }
+        }
     }
 } // namespace YFComms

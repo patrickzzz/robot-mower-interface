@@ -25,5 +25,6 @@ namespace YFComms {
         static void ledControllerGPIOTask(void* pvParameters);
         void updateLEDs(int tickCounter);
         void toggleLED(const BoardConfig::LEDConfig& ledConfig);
+        void turnOffAllLEDs();
     };
 } // namespace YFComms

@@ -9,7 +9,7 @@ public:
     void onButtonEvent(YFComms::Button button, YFComms::ButtonStateEnum state, uint32_t duration) override {
         std::string buttonName = getButtonName(button);
 
-        if (state == YFComms::ButtonStateEnum::PRESSED) {
+        if (state == YFComms::ButtonStateEnum::HIGH) {
             ESP_LOGI("MyButtonHandler", "Button %s is now high after %u ms", buttonName.c_str(), static_cast<unsigned int>(duration));
         } else {
             ESP_LOGI("MyButtonHandler", "Button %s is now low after %u ms", buttonName.c_str(), static_cast<unsigned int>(duration));

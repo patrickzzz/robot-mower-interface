@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <chrono>
 #include <esp_timer.h>
-#include <vector>
 #include <algorithm>
 #include "IButtonEventObserver.hpp"
 
@@ -48,8 +47,8 @@ namespace YFComms {
     };
 
     enum class ButtonStateEnum : uint8_t {
-        RELEASED = 0x00,
-        PRESSED = 0x01
+        LOW = 0x00,
+        HIGH = 0x01
     };
 
     class ButtonState {
@@ -61,12 +60,11 @@ namespace YFComms {
 
         const std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)>& getStates() const;
 
-        void addObserver(IButtonEventObserver* observer);
-        void removeObserver(IButtonEventObserver* observer);
+        ButtonState& setObserver(IButtonEventObserver* observer);
 
     private:
         std::array<ButtonStateEnum, static_cast<size_t>(Button::MAX)> buttonStates;
-        std::vector<IButtonEventObserver*> observers;
-        void notifyObservers(Button button, ButtonStateEnum state, uint32_t duration);
+        IButtonEventObserver* observer;
+        void notifyObserver(Button button, ButtonStateEnum state, uint32_t duration);
     };
 } // namespace YFComms
