@@ -114,12 +114,13 @@ extern "C" void app_main(void) {
 
     // add Button/Hall Event Observer
     MyButtonHandler myButtonHandler;
-    coverUIController.getButtonState().addObserver(&myButtonHandler);
+    coverUIController.getButtonState().setObserver(&myButtonHandler);
 
     // enable leds
     coverUIController.getLEDState()
         .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
         .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_SLOW);
 
         /*

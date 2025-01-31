@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <vector>
+#include <array>
 
 namespace YFComms {
     class BoardConfig {
@@ -31,12 +31,12 @@ namespace YFComms {
 
         virtual ~BoardConfig() = default;
 
-        virtual const std::vector<LEDConfig>& getLEDConfigs() const = 0;
-        virtual const std::vector<ButtonConfig>& getButtonConfigs() const = 0;
+        virtual const LEDConfig* getLEDConfigs(size_t& count) const = 0;
+        virtual const ButtonConfig* getButtonConfigs(size_t& count) const = 0;
 
         std::string getModelName() const { return modelName; }
         virtual bool hasSerialCommunication() const = 0;
-        virtual std::vector<uint8_t> getDefaultLEDMessage() const = 0;
+        virtual const uint8_t* getDefaultLEDMessage(size_t& length) const = 0;
 
     protected:
         explicit BoardConfig(std::string modelName) : modelName(std::move(modelName)) {}

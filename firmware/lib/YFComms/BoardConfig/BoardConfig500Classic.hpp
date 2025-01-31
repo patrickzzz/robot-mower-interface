@@ -8,19 +8,10 @@
 namespace YFComms {
     class BoardConfig500Classic : public BoardConfig {
     public:
-        BoardConfig500Classic() : BoardConfig("500Classic") {
-            setupConfigs();
-        }
+        BoardConfig500Classic() : BoardConfig("500Classic") {}
 
-        const std::vector<LEDConfig>& getLEDConfigs() const override { return ledConfigs; }
-        const std::vector<ButtonConfig>& getButtonConfigs() const override { return buttonConfigs; }
-
-    private:
-        std::vector<LEDConfig> ledConfigs;
-        std::vector<ButtonConfig> buttonConfigs;
-
-        void setupConfigs() {
-            ledConfigs = {
+        const LEDConfig* getLEDConfigs(size_t& count) const override {
+            static constexpr LEDConfig ledConfigs[] = {
                 {static_cast<uint8_t>(LED::LIFTED), BoardConfig::CommunicationType::UART, 0xFF, 0},
                 {static_cast<uint8_t>(LED::SIGNAL), BoardConfig::CommunicationType::UART, 0xFF, 1},
                 {static_cast<uint8_t>(LED::BATTERY_LOW), BoardConfig::CommunicationType::UART, 0xFF, 2},
@@ -41,7 +32,13 @@ namespace YFComms {
                 {static_cast<uint8_t>(LED::DAY_SUN), BoardConfig::CommunicationType::UART, 0xFF, 17}
             };
 
-            buttonConfigs = {
+            count = sizeof(ledConfigs) / sizeof(ledConfigs[0]);
+
+            return ledConfigs;
+        }
+
+        const ButtonConfig* getButtonConfigs(size_t& count) const override {
+            static constexpr ButtonConfig buttonConfigs[] = {
                 // GPIO
                 {static_cast<uint8_t>(Button::PLAY), BoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF, 0xFF},
                 {static_cast<uint8_t>(Button::HOME), BoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF, 0xFF},
@@ -71,11 +68,18 @@ namespace YFComms {
                 {static_cast<uint8_t>(Button::SHELL_STOP1), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_6, 0xFF},
                 {static_cast<uint8_t>(Button::SHELL_STOP2), BoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_7, 0xFF},
             };
+            count = sizeof(buttonConfigs) / sizeof(buttonConfigs[0]);  // Größe berechnen
+            return buttonConfigs;
         }
 
-        std::vector<uint8_t> getDefaultLEDMessage() const override {
-            // here it has an incorrect checksum
-            return {0x55, 0xAA, 0x15, 0x50, 0x8E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        const uint8_t* getDefaultLEDMessage(size_t& length) const override {
+            static constexpr uint8_t message[] = {
+                0x55, 0xAA, 0x15, 0x50, 0x8E, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            length = sizeof(message);
+            return message;
         }
 
         bool hasSerialCommunication() const override {

@@ -47,35 +47,37 @@ namespace YFComms {
 
         uint32_t currentTime = xTaskGetTickCount() * portTICK_PERIOD_MS;
 
-        for (const auto& buttonConfig : boardConfig.getButtonConfigs()) {
-            if (buttonConfig.commType == BoardConfig::CommunicationType::UART) {
-                continue; // UART-Buttons werden anders behandelt
+        size_t buttonCount;
+        const auto* buttons = boardConfig.getButtonConfigs(buttonCount);
+
+        for (size_t i = 0; i < buttonCount; i++) {
+            if (buttons[i].commType == BoardConfig::CommunicationType::UART) {
+                continue; // UART-Buttons read on another place
             }
 
-            // Button State bestimmen (GPIO oder GPIO_EXP)
+            // Define state by reading GPIO or Expander
             ButtonStateEnum newState = ButtonStateEnum::LOW;
-            if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO_EXP) {
-                bool isHigh = (expanderStates & buttonConfig.expanderPin) != 0;
+            if (buttons[i].commType == BoardConfig::CommunicationType::GPIO_EXP) {
+                bool isHigh = (expanderStates & buttons[i].expanderPin) != 0;
                 newState = isHigh ? ButtonStateEnum::HIGH : ButtonStateEnum::LOW;
-            } else if (buttonConfig.commType == BoardConfig::CommunicationType::GPIO) {
-                bool isHigh = gpio_get_level(static_cast<gpio_num_t>(buttonConfig.gpioPin)) != 0;
+            } else if (buttons[i].commType == BoardConfig::CommunicationType::GPIO) {
+                bool isHigh = gpio_get_level(static_cast<gpio_num_t>(buttons[i].gpioPin)) != 0;
                 newState = isHigh ? ButtonStateEnum::HIGH : ButtonStateEnum::LOW;
             }
 
-            // Zeitmessung und Debounce
-            auto index = static_cast<size_t>(buttonConfig.buttonIndex);
+            // Debounce
+            auto index = static_cast<size_t>(buttons[i].buttonIndex);
             uint32_t lastChangeTime = lastStateChangeTimes[index];
             uint32_t duration = currentTime - lastChangeTime;
 
-            if (newState != buttonState.getState(static_cast<Button>(buttonConfig.buttonIndex))) {
+            if (newState != buttonState.getState(static_cast<Button>(buttons[i].buttonIndex))) {
                 if (newState == ButtonStateEnum::LOW && duration < 15) {
-                    ESP_LOGI(TAG, "Debounced short press ignored for button %d", buttonConfig.buttonIndex);
+                    ESP_LOGI(TAG, "Debounced short press ignored for button %d", buttons[i].buttonIndex);
                     continue; // Ignore short releases
                 }
 
-                // Update Zeitstempel und Zustand
                 lastStateChangeTimes[index] = currentTime;
-                buttonState.setState(static_cast<Button>(buttonConfig.buttonIndex), newState, duration);
+                buttonState.setState(static_cast<Button>(buttons[i].buttonIndex), newState, duration);
             }
         }
     }
