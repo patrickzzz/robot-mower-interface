@@ -19,7 +19,8 @@
 #include "LedSequencer.hpp"
 #include "config.h"
 #include "pins.h"
-#include "CoverUIController.hpp"
+#include "YFComms/CoverUIController.hpp"
+#include "YFComms/State/LEDState.hpp"
 #include "MyButtonHandler.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
 #include "mainboards/mainboard_driver_yf.hpp"
@@ -112,9 +113,9 @@ extern "C" void app_main(void) {
     YFComms::CoverUIController coverUIController("500Classic");
     coverUIController.initialize();
 
-    // add Button/Hall Event Observer
+    // add Button/Hall Event Listener
     MyButtonHandler myButtonHandler;
-    coverUIController.getButtonState().setObserver(&myButtonHandler);
+    coverUIController.getButtonState().setListener(&myButtonHandler);
 
     // enable leds
     coverUIController.getLEDState()
@@ -123,7 +124,7 @@ extern "C" void app_main(void) {
         .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
         .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_SLOW);
 
-        /*
+    /*
         .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
         .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_SLOW)
         .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_SLOW)

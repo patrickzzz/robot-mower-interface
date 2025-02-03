@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ButtonState.hpp"
-#include "IButtonEventObserver.hpp"
+#include "YFComms/State/ButtonState.hpp"
+#include "YFComms/EventListener/AbstractButtonEventListener.hpp"
 #include <esp_log.h>
 
-class MyButtonHandler : public YFComms::IButtonEventObserver {
+class MyButtonHandler : public YFComms::AbstractButtonEventListener {
 public:
     void onButtonEvent(YFComms::Button button, YFComms::ButtonStateEnum state, uint32_t duration) override {
         std::string buttonName = getButtonName(button);
