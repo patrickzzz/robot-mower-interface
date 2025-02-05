@@ -7,8 +7,8 @@ void SetupPins();
 
 // ----- UARTs -----
 // YF-Rev6-A Plug
-constexpr gpio_num_t pinUartR6ARx = GPIO_NUM_18;
-constexpr gpio_num_t pinUartR6ATx = GPIO_NUM_17;
+constexpr gpio_num_t pinUartR6ARx = GPIO_NUM_17;
+constexpr gpio_num_t pinUartR6ATx = GPIO_NUM_18;
 // YF-Rev6-B Plug
 constexpr gpio_num_t pinUartR6BRx = GPIO_NUM_38;
 constexpr gpio_num_t pinUartR6BTx = GPIO_NUM_37;

@@ -64,7 +64,7 @@ class MainboardAbstractUART : public MainboardInterface {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
             .rx_flow_ctrl_thresh = 0,
             .source_clk = UART_SCLK_DEFAULT,
-            .flags = {.backup_before_sleep = 0},
+            .flags = {.allow_pd = 0, .backup_before_sleep = 0},
         };
         ESP_RETURN_ON_ERROR(uart_param_config(port_, &uart_config), TAG, "uart_param_config() failed");
 

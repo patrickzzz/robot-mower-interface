@@ -33,15 +33,15 @@ namespace YFComms {
 
         const ButtonConfig* getButtonConfigs(size_t& count) const override {
             static constexpr ButtonConfig buttonConfigs[] = {
-                {static_cast<uint8_t>(Button::PLAY), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF},
-                {static_cast<uint8_t>(Button::HOME), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF},
-                {static_cast<uint8_t>(Button::LOCK), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_12},
-                {static_cast<uint8_t>(Button::S1), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_13},
-                {static_cast<uint8_t>(Button::S2), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_14},
-                {static_cast<uint8_t>(Button::HOURS_FOUR), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_8},
-                {static_cast<uint8_t>(Button::HOURS_SIX), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_9},
-                {static_cast<uint8_t>(Button::HOURS_EIGHT), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_10},
-                {static_cast<uint8_t>(Button::HOURS_TEN), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_11},
+                {static_cast<uint8_t>(Button::PLAY), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_0, 0xFFFFFFFF, 0xFF},
+                {static_cast<uint8_t>(Button::HOME), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_3, 0xFFFFFFFF, 0xFF},
+                {static_cast<uint8_t>(Button::LOCK), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_12, 0xFF},
+                {static_cast<uint8_t>(Button::S1), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_13, 0xFF},
+                {static_cast<uint8_t>(Button::S2), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_14, 0xFF},
+                {static_cast<uint8_t>(Button::HOURS_FOUR), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_8, 0xFF},
+                {static_cast<uint8_t>(Button::HOURS_SIX), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_9, 0xFF},
+                {static_cast<uint8_t>(Button::HOURS_EIGHT), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_10, 0xFF},
+                {static_cast<uint8_t>(Button::HOURS_TEN), AbstractBoardConfig::CommunicationType::GPIO_EXP, 0xFF, IO_EXPANDER_PIN_NUM_11, 0xFF},
             };
             count = sizeof(buttonConfigs) / sizeof(buttonConfigs[0]);  // Größe berechnen
             return buttonConfigs;

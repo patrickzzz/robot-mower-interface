@@ -23,7 +23,6 @@
 #include "YFComms/State/LEDState.hpp"
 #include "MyButtonHandler.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
-#include "mainboards/mainboard_driver_yf.hpp"
 
 static const char* TAG = "Robot Mower Interface";
 
@@ -102,47 +101,73 @@ extern "C" void app_main(void) {
 #endif
 
 #ifdef DEV_PK
-    mainboard = new mainboard_yf::MainboardDriverYF(UART_NUM_2, pinUartR6ARx, pinUartR6ATx, nullptr);
-    if (esp_err_t ret = mainboard->init() != ESP_OK) {
-        ESP_LOGE(TAG, "MainboardDriverOM->init() failed with error: %s", esp_err_to_name(ret));
-        led_red_seq.blink({.limit_blink_cycles = 5, .fulfill = true, .repeat = true});
-        return;  // Other tasks will still run!
-    }
-
-    // create coverUIController for 40 pin gpio
+    // create coverUIController for specific model
     YFComms::CoverUIController coverUIController("500Classic");
+
+    // create structs for uart configs
+    YFComms::UARTConfig uartConfigCoverUI = YFComms::UARTConfig{.uartPort = UART_NUM_1, .rxPin = pinUartR6BRx, .txPin = pinUartR6BTx};
+    YFComms::UARTConfig uartConfigHardwareMainboard = YFComms::UARTConfig{.uartPort = UART_NUM_2, .rxPin = pinUartR6ARx, .txPin = pinUartR6ATx};
+
+    // set configs
+    coverUIController.setUARTConfigCoverUI(uartConfigCoverUI);
+    coverUIController.setUARTConfigHardwareMainboard(uartConfigHardwareMainboard);
+
+    // set mainboard type
+    coverUIController.setMainboardType(YFComms::MainboardType::YF_HARDWARE);
+    //coverUIController.setMainboardType(YFComms::MainboardType::YF_VIRTUAL);
+
+    // initialize coverUIController
     coverUIController.initialize();
 
     // add Button/Hall Event Listener
     MyButtonHandler myButtonHandler;
     coverUIController.getButtonState().setListener(&myButtonHandler);
 
-    // enable leds
+    // enable leds for first test..
     coverUIController.getLEDState()
-        .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
+        .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::FLASH_FAST)
         .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_SLOW);
+        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::FLASH_FAST)
+        .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::FLASH_FAST);
 
-    /*
-        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_SLOW)
-        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_SLOW)
-        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::FLASH_SLOW)
-        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::ON)
-        .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::ON);
-*/
- //   vTaskDelay(4000 / portTICK_PERIOD_MS);  // delay(1000)
+    vTaskDelay(4500 / portTICK_PERIOD_MS);  // delay(1000)
+    coverUIController.getLEDState()
+    .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
+    .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
+    .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::ON)
+    .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
+    .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_SLOW)
+    .setState(YFComms::LED::S1, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::S2, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::OFF)
+    .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::OFF);
     // switch to 500c and update led states there as well..
  //   coverUIController.changeModel("500Classic");
 #endif

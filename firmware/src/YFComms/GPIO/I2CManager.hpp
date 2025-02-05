@@ -45,7 +45,7 @@ private:
                 .glitch_ignore_cnt = 7,
                 .intr_priority = 0,
                 .trans_queue_depth = 0,
-                .flags = {.enable_internal_pullup = 1},
+                .flags = {.enable_internal_pullup = 1, .allow_pd = 0},
             };
 
             esp_err_t ret = i2c_new_master_bus(&busConfig, &i2cHandle);
