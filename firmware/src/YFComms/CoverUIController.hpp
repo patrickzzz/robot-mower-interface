@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "State/LEDState.hpp"
 #include "State/ButtonState.hpp"
 #include "UART/CoverUIControllerUART.hpp"
 #include "GPIO/LEDControllerGPIO.hpp"
@@ -11,6 +10,7 @@
 #include "driver/gpio.h"
 #include "UART/VirtualMainboardUART.hpp"
 #include "UART/HardwareMainboardUART.hpp"
+#include "LED.hpp"
 
 namespace YFComms {
 
@@ -37,8 +37,55 @@ namespace YFComms {
         // Initialize the controller (configure communication, LEDs, buttons)
         void initialize();
 
-        // Access LED state
-        LEDState& getLEDState();
+        /**
+         * @brief Get the current LED mode
+         *
+         * @param name
+         * @return led::Modes
+         */
+        led::Modes getLEDMode(led::Names name) const {
+            const auto& it = boardConfig->leds->find(name);  // Find the named LED within our leds map
+            if (it != boardConfig->leds->end()) {            // Found
+                auto led = it->second;
+                return led.getMode();
+            }
+            return led::Modes::OFF;
+        }
+
+        /**
+         * @brief Set the mode of the LED and track if the mode changed
+         *
+         * @param name of the LED
+         * @param state like ON, OFF, FLASH_...
+         */
+        void setLEDMode(const led::Names name, const led::Modes mode) {
+            auto it = boardConfig->leds->find(name);  // Find the named LED within our leds map
+            if (it != boardConfig->leds->end()) {     // Found
+                auto led = it->second;
+                led_mode_changed_ |= led.setMode(mode);  // Logic OR result with LED-Changed track flag
+            }  // else: LED with this name does'nt exists
+        }
+
+        /**
+         * @brief Set the all LEDs to the given mode
+         * 
+         * @param mode 
+         */
+        void setAllLEDsMode(const led::Modes mode) {
+            for (auto& [name, led] : *boardConfig->leds) {
+                setLEDMode(name, mode);
+            }
+        }
+
+        /**
+         * @brief Has a LED mode changed (since last commit?)?
+         *
+         * @return true if the LED mode changed
+         * @return false if no LED mode changed
+         */
+        bool hasLEDModeChanged() { return led_mode_changed_; }
+
+        void setLEDModeChanged(const bool changed) { led_mode_changed_ = changed; }
 
         // Access Button state
         ButtonState& getButtonState();
@@ -57,8 +104,7 @@ namespace YFComms {
         // Board configuration
         std::unique_ptr<AbstractBoardConfig> boardConfig;
 
-        // LED and Button states
-        LEDState ledState;
+        // Button states
         ButtonState buttonState;
 
         // Lets create a virtual mainboard
@@ -87,6 +133,8 @@ namespace YFComms {
 
         // Private helpers
         void setupCommunicationHandler(); // Configures the CommunicationHandler based on AbstractBoardConfig
-    };
 
+        // Tracks if a LED state got changed
+        bool led_mode_changed_ = false;
+    };
 } // namespace YFComms

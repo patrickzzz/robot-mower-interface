@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../State/LEDState.hpp"
-
 namespace YFComms {
     class AbstractLEDEventListener {
     public:

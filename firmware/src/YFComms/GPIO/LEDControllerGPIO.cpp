@@ -1,11 +1,15 @@
 #include "LEDControllerGPIO.hpp"
+
+#include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_log.h>
+
+#include "../LED.hpp"
+#include "driver/gpio.h"
 
 namespace YFComms {
-    LEDControllerGPIO::LEDControllerGPIO(LEDState& ledState, const AbstractBoardConfig& boardConfig)
-        : ledState(ledState), boardConfig(boardConfig), ledControllerGPIOHandle(nullptr) {
+    LEDControllerGPIO::LEDControllerGPIO(const AbstractBoardConfig& boardConfig)
+        : boardConfig(boardConfig), ledControllerGPIOHandle(nullptr) {
         // Initialize all LEDs to off
         turnOffAllLEDs();
     }
@@ -44,62 +48,41 @@ namespace YFComms {
     }
 
     void LEDControllerGPIO::updateLEDs(int tickCounter) {
-        size_t ledCount;
-        const auto* leds = boardConfig.getLEDConfigs(ledCount);
+        for (auto& [name, led] : *boardConfig.leds) {
+            if (led.getCommType() != AbstractBoardConfig::CommunicationType::GPIO) // FIXME: Why do we check for CommType::GPIO? We are in the LEDControllerGPIO. Do we have to count with other CommTypes here?
+                continue;
 
-        for (size_t i = 0; i < ledCount; i++) {
-            if (leds[i].commType == AbstractBoardConfig::CommunicationType::GPIO) {
-                LEDStateEnum state = ledState.getState(static_cast<LED>(leds[i].ledIndex));
+            switch (led.getMode()) {
+                case led::Modes::ON:
+                    led.gpioSetLevel(1);
+                    break;
 
-                switch (state) {
-                    case LEDStateEnum::ON:
-                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 1);
-                        ledLastStates[leds[i].ledIndex] = 1;
-                        break;
+                case led::Modes::OFF:
+                    led.gpioSetLevel(0);
+                    break;
 
-                    case LEDStateEnum::OFF:
-                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
-                        ledLastStates[leds[i].ledIndex] = 0;
-                        break;
+                case led::Modes::FLASH_SLOW:
+                    if (tickCounter % 12 == 0) led.gpioToggle();
+                    break;
 
-                    case LEDStateEnum::FLASH_SLOW:
-                        if (tickCounter % 12 == 0) {
-                            toggleLED(leds[i]);
-                        }
-                        break;
+                case led::Modes::FLASH_FAST:
+                    if (tickCounter % 5 == 0) led.gpioToggle();
+                    break;
 
-                    case LEDStateEnum::FLASH_FAST:
-                        if (tickCounter % 5 == 0) {
-                            toggleLED(leds[i]);
-                        }
-                        break;
-
-                    default:
-                        gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
-                        ledLastStates[leds[i].ledIndex] = 0;
-                        break;
-                }
+                default:
+                    led.gpioSetLevel(0);
+                    break;
             }
         }
     }
 
-    void LEDControllerGPIO::toggleLED(const AbstractBoardConfig::LEDConfig& ledConfig) {
-        int currentLevel = ledLastStates[ledConfig.ledIndex];
-        int newLevel = currentLevel == 0 ? 1 : 0;
-
-        gpio_set_level(static_cast<gpio_num_t>(ledConfig.gpioPin), newLevel);
-        ledLastStates[ledConfig.ledIndex] = newLevel;
-    }
-
+    // FIXME: A very similar method is already in CoverUIController, but do'nt know how to get it from here.
+    //  So I simply build it a second time
     void LEDControllerGPIO::turnOffAllLEDs() {
-        size_t ledCount;
-        const auto* leds = boardConfig.getLEDConfigs(ledCount);
-
-        for (size_t i = 0; i < ledCount; i++) {
-            if (leds[i].commType == AbstractBoardConfig::CommunicationType::GPIO) {
-                gpio_set_level(static_cast<gpio_num_t>(leds[i].gpioPin), 0);
-                ledLastStates[leds[i].ledIndex] = 0;
-            }
+        for (auto& [name, led] : *boardConfig.leds) {
+            if (led.getCommType() != AbstractBoardConfig::CommunicationType::GPIO)  // FIXME: Why do we check for CommType::GPIO? We are in the LEDControllerGPIO. Do we have to count with other CommTypes here?
+                continue;
+            led.gpioSetLevel(0);
         }
     }
-} // namespace YFComms
+}  // namespace YFComms

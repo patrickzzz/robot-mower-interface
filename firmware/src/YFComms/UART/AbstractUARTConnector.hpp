@@ -29,7 +29,8 @@ public:
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
             .rx_flow_ctrl_thresh = 0,
             .source_clk = UART_SCLK_APB,
-            .flags = {.allow_pd = 0, .backup_before_sleep = 0},
+            //.flags = {.allow_pd = 0, .backup_before_sleep = 0},
+            .flags = {.backup_before_sleep = 0},
         };
 
         ESP_ERROR_CHECK(uart_param_config(uartPort, &uart_config));

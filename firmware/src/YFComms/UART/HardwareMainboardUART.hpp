@@ -3,7 +3,6 @@
 #include <string>
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "../State/LEDState.hpp"
 #include "../State/ButtonState.hpp"
 #include "../BoardConfig/AbstractBoardConfig.hpp"
 #include "AbstractUARTYF.hpp"
@@ -13,9 +12,8 @@ namespace YFComms {
     class HardwareMainboardUART : public AbstractUARTYF, public MainBoardUARTInterface {
 
     public:
-        HardwareMainboardUART(LEDState& ledState, ButtonState& buttonState, const AbstractBoardConfig& boardConfig, uart_port_t uartPort, gpio_num_t rxPin, gpio_num_t txPin)
+        HardwareMainboardUART(ButtonState& buttonState, const AbstractBoardConfig& boardConfig, uart_port_t uartPort, gpio_num_t rxPin, gpio_num_t txPin)
             : AbstractUARTYF(uartPort, rxPin, txPin),
-              ledState(ledState),
               buttonState(buttonState),
               boardConfig(boardConfig)
         {}
@@ -31,7 +29,6 @@ namespace YFComms {
         }
 
     protected:
-        LEDState& ledState;
         ButtonState& buttonState;
         const AbstractBoardConfig& boardConfig;
 

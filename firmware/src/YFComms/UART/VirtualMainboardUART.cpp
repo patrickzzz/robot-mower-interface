@@ -236,9 +236,10 @@ namespace YFComms {
 
 
     void VirtualMainboardUART::updateLEDStateMessage(bool forceUpdate) {
-        if (!forceUpdate && !ledState.getIsUpdated()) {
+        /* FIXME: Not yet clear to me for what the VirtualMainboardUART is and why it doesn't has a CoverUIController
+        if (!forceUpdate && coverUIControllerUART->hasLEDModeChanged) {
             return;
-        }
+        }*/
 
         size_t messageLength = 0;
         const uint8_t* defaultMessage = boardConfig.getDefaultLEDMessage(messageLength);
@@ -251,20 +252,23 @@ namespace YFComms {
         uint8_t newLEDMessage[AbstractUARTConnector::MAX_MESSAGE_LENGTH] = {0};
         memcpy(newLEDMessage, defaultMessage, messageLength);
 
+        /* FIXME: Not yet clear to me for what the VirtualMainboardUART is and why it doesn't has a CoverUIController
         size_t ledCount;
         const auto* leds = boardConfig.getLEDConfigs(ledCount);
 
         for (size_t i = 0; i < ledCount; i++) {
             if (leds[i].commType == AbstractBoardConfig::CommunicationType::UART) {
-                uint8_t ledStateValue = static_cast<uint8_t>(ledState.getState(static_cast<LED>(leds[i].ledIndex)));
+                uint8_t ledStateValue = static_cast<uint8_t>(ledState.getState(static_cast<LEDold>(leds[i].ledIndex)));
                 newLEDMessage[5 + leds[i].uartMessagePos] = ledStateValue;
             }
-        }
+        }*/
 
         AbstractUARTYF::updateChecksumInMessage(newLEDMessage, messageLength);
         memcpy(currentLEDMessage, newLEDMessage, messageLength);
 
+        /* FIXME: Not yet clear to me for what the VirtualMainboardUART is
         ledState.setIsUpdated(false);
+        */
     }
 
     void VirtualMainboardUART::updateButtonState(const uint8_t* messageBuffer, size_t messageLength) {

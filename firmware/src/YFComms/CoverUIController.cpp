@@ -11,7 +11,6 @@ namespace YFComms {
     // Constructor
     CoverUIController::CoverUIController(const std::string& modelName)
     : boardConfig(BoardConfigFactory(modelName)),
-      ledState(),
       buttonState() {}
 
     void CoverUIController::initialize() {
@@ -41,10 +40,6 @@ namespace YFComms {
         setupCommunicationHandler();
     }
 
-    LEDState& CoverUIController::getLEDState() {
-        return ledState;
-    }
-
     ButtonState& CoverUIController::getButtonState() {
         return buttonState;
     }
@@ -53,7 +48,7 @@ namespace YFComms {
         ESP_LOGI(TAG, "Setting up communication handler...");
         if(boardConfig->hasSerialCommunication()) {
             if(!coverUIControllerUART) {
-                coverUIControllerUART = std::make_unique<CoverUIControllerUART>(ledState, buttonState, *boardConfig, uartConfigCoverUI.uartPort, uartConfigCoverUI.rxPin, uartConfigCoverUI.txPin);
+                coverUIControllerUART = std::make_unique<CoverUIControllerUART>(buttonState, *boardConfig, uartConfigCoverUI.uartPort, uartConfigCoverUI.rxPin, uartConfigCoverUI.txPin);
             }
 
             if(coverUIControllerUART->init() != ESP_OK) {
@@ -62,14 +57,14 @@ namespace YFComms {
 
             if(mainboardType == MainboardType::YF_VIRTUAL) {
                 if(!virtualMainboardUART) {
-                    virtualMainboardUART = std::make_unique<VirtualMainboardUART>(ledState, buttonState, *boardConfig);
+                    virtualMainboardUART = std::make_unique<VirtualMainboardUART>(buttonState, *boardConfig);
                 }
 
                 virtualMainboardUART->setCoverUIControllerUART(coverUIControllerUART.get());
                 coverUIControllerUART->setMainboard(virtualMainboardUART.get());
             }else if(mainboardType == MainboardType::YF_HARDWARE) {
                 if(!hardwareMainboardUART) {
-                    hardwareMainboardUART = std::make_unique<HardwareMainboardUART>(ledState, buttonState, *boardConfig, uartConfigHardwareMainboard.uartPort, uartConfigHardwareMainboard.rxPin, uartConfigHardwareMainboard.txPin);
+                    hardwareMainboardUART = std::make_unique<HardwareMainboardUART>(buttonState, *boardConfig, uartConfigHardwareMainboard.uartPort, uartConfigHardwareMainboard.rxPin, uartConfigHardwareMainboard.txPin);
                     if(hardwareMainboardUART->init() != ESP_OK) {
                         ESP_LOGE(TAG, "Failed to initialize hardware mainboard UART");
                     }
@@ -81,7 +76,7 @@ namespace YFComms {
         }else{
             // on serial communication models, no leds are available via gpio
             if(!ledControllerGPIO) {
-                ledControllerGPIO = std::make_unique<LEDControllerGPIO>(ledState, *boardConfig);
+                ledControllerGPIO = std::make_unique<LEDControllerGPIO>(*boardConfig);
             }
             ledControllerGPIO->start();
         }

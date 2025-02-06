@@ -1,13 +1,7 @@
 /*
  * AH20241203 infos for @patrickzzz:
- * - Quick started this test-prototype code as described in official docs
- *   https://docs.platformio.org/en/latest/tutorials/espressif32/espidf_debugging_unit_testing_analysis.html#tutorial-espressif32-espidf-debugging-unit-testing-analysis
- *   but stopped at point 6 (Serial Monitor)
  * - Partitioned with 2*OTA "Safe update mode" see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/ota.html
  * - Followed Google C++ Sytle Guide see https://google.github.io/styleguide/cppguide.html#Naming except for "k" prefix for constants which I don't liked to follow ;-)
- * - Must read/best ESP-IDF reference guide https://docs.espressif.com/projects/esp-idf/en/v5.3.1/esp32s3 Awesome ESP lib, much better than Arduino!!
- * - Our currently used ESP32-S3FH4R2 also has fast 2MB (Quad SPI) PSRAM!
- *   Whenever you need some more RAM for larger (>100? byte) buffer or similar, use the PSRAM specific malloc functions to use the PSRAM (instead of heap or stack)
  */
 
 #include <esp_log.h>
@@ -20,9 +14,9 @@
 #include "config.h"
 #include "pins.h"
 #include "YFComms/CoverUIController.hpp"
-#include "YFComms/State/LEDState.hpp"
 #include "MyButtonHandler.hpp"
 #include "mainboards/mainboard_driver_om.hpp"
+#include "YFComms/LED.hpp"
 
 static const char* TAG = "Robot Mower Interface";
 
@@ -74,8 +68,8 @@ extern "C" void app_main(void) {
     xTaskCreate(LedsTask, "LEDs_Task", 1024, NULL, 2, &leds_task_handle);
 
     // LED test and blink sequence indicating "Minimal setup successful"
-    led_grn_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Default = 200ms ON, 200ms OFF
-    led_red_seq.blink({.limit_blink_cycles = 1, .fulfill = true});  // Default = 200ms ON, 200ms OFF
+    led_grn_seq.blink({.limit_blink_cycles = 3, .fulfill = true});  // Default = 200ms ON, 200ms OFF
+    led_red_seq.blink({.limit_blink_cycles = 3, .fulfill = true});  // Default = 200ms ON, 200ms OFF
 
     // @patrickzzz WiFi & WebServer init should start somewhere here.
     // Mainly because WiFi doesn't depend on any of the following peripherals.
@@ -124,50 +118,16 @@ extern "C" void app_main(void) {
     coverUIController.getButtonState().setListener(&myButtonHandler);
 
     // enable leds for first test..
-    coverUIController.getLEDState()
-        .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::S1, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::S2, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::FLASH_FAST)
-        .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::FLASH_FAST);
+    coverUIController.setAllLEDsMode(YFComms::led::Modes::FLASH_FAST);
 
     vTaskDelay(4500 / portTICK_PERIOD_MS);  // delay(1000)
-    coverUIController.getLEDState()
-    .setState(YFComms::LED::LIFTED, YFComms::LEDStateEnum::ON)
-    .setState(YFComms::LED::SIGNAL, YFComms::LEDStateEnum::ON)
-    .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::ON)
-    .setState(YFComms::LED::BATTERY_LOW, YFComms::LEDStateEnum::ON)
-    .setState(YFComms::LED::CHARGING, YFComms::LEDStateEnum::FLASH_SLOW)
-    .setState(YFComms::LED::S1, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::S2, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::LOCK, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::HOURS_TWO, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::HOURS_FOUR, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::HOURS_SIX, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::HOURS_EIGHT, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::HOURS_TEN, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_MON, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_TUE, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_WED, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_THR, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_FRI, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_SAT, YFComms::LEDStateEnum::OFF)
-    .setState(YFComms::LED::DAY_SUN, YFComms::LEDStateEnum::OFF);
+    coverUIController.setAllLEDsMode(YFComms::led::Modes::OFF);
+    coverUIController.setLEDMode(YFComms::led::Names::LIFTED, YFComms::led::Modes::ON);
+    coverUIController.setLEDMode(YFComms::led::Names::SIGNAL, YFComms::led::Modes::ON);
+    coverUIController.setLEDMode(YFComms::led::Names::HOURS_TWO, YFComms::led::Modes::ON);
+    coverUIController.setLEDMode(YFComms::led::Names::BATTERY_LOW, YFComms::led::Modes::ON);
+    coverUIController.setLEDMode(YFComms::led::Names::CHARGING, YFComms::led::Modes::FLASH_SLOW);
+
     // switch to 500c and update led states there as well..
  //   coverUIController.changeModel("500Classic");
 #endif
@@ -175,6 +135,7 @@ extern "C" void app_main(void) {
     ESP_LOGI(TAG, "Start");
 #ifdef DEV_PK
     while (1) {
+        led_grn_seq.blink({.on_ms = 20, .limit_blink_cycles = 1, .fulfill = true});
         vTaskDelay(1000 / portTICK_PERIOD_MS);  // delay(1000)
     }
 #endif

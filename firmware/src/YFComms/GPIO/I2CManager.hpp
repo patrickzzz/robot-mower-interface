@@ -45,7 +45,9 @@ private:
                 .glitch_ignore_cnt = 7,
                 .intr_priority = 0,
                 .trans_queue_depth = 0,
-                .flags = {.enable_internal_pullup = 1, .allow_pd = 0},
+                // FIXME: This is not defined by me. Do you use a newer lib or forgot to commit them?
+                //.flags = {.enable_internal_pullup = 1, .allow_pd = 0},
+                .flags = {.enable_internal_pullup = 1},
             };
 
             esp_err_t ret = i2c_new_master_bus(&busConfig, &i2cHandle);

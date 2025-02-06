@@ -3,33 +3,29 @@
 #include "AbstractBoardConfig.hpp"
 #include "driver/gpio.h"
 #include "esp_io_expander.h"
-#include "../State/LEDState.hpp"
 #include "../State/ButtonState.hpp"
+#include "../LED.hpp"
+#include "../../../include/pins.h"
 
 namespace YFComms {
     class BoardConfigGPIO : public AbstractBoardConfig {
     public:
         BoardConfigGPIO() : AbstractBoardConfig("GPIO") {}
 
-        const LEDConfig* getLEDConfigs(size_t& count) const override {
-            static constexpr LEDConfig ledConfigs[] = {
-                {static_cast<uint8_t>(LED::LIFTED), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_1, 0},
-                {static_cast<uint8_t>(LED::SIGNAL), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_4, 0},
-                {static_cast<uint8_t>(LED::BATTERY_LOW), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_2, 0},
-                {static_cast<uint8_t>(LED::CHARGING), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_6, 0},
-                {static_cast<uint8_t>(LED::S1), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_11, 0},
-                {static_cast<uint8_t>(LED::S2), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_12, 0},
-                {static_cast<uint8_t>(LED::LOCK), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_10, 0},
-                {static_cast<uint8_t>(LED::HOURS_FOUR), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_7, 0},
-                {static_cast<uint8_t>(LED::HOURS_SIX), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_8, 0},
-                {static_cast<uint8_t>(LED::HOURS_EIGHT), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_9, 0},
-                {static_cast<uint8_t>(LED::HOURS_TEN), AbstractBoardConfig::CommunicationType::GPIO, GPIO_NUM_5, 0}
-            };
-
-            count = sizeof(ledConfigs) / sizeof(ledConfigs[0]);
-
-            return ledConfigs;
-        }
+        // With the simple LED class like in YFComms/LED.hpp, we could store all LEDs in such a map,
+        // whose key is the LED name which point to the LED object. Pro: We save a lot of space and expensive loops
+        etl::flat_map<led::Names, led::LED, 11> leds_impl_ = {
+            {led::Names::LIFTED, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedLifted, 0)},
+            {led::Names::SIGNAL, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedConnect, 0)},
+            {led::Names::BATTERY_LOW, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedBattery, 0)},
+            {led::Names::CHARGING, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedCharge, 0)},
+            {led::Names::LOCK, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedLock, 0)},  // FIXME: pins.h has another pin than the former one
+            {led::Names::S1, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedS1, 0)},      // FIXME: pins.h has another pin than the former one
+            {led::Names::S2, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLedS2, 0)},      // FIXME: pins.h has another pin than the former one
+            {led::Names::HOURS_TWO, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLed14h, 0)},
+            {led::Names::HOURS_FOUR, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLed24h, 0)},
+            {led::Names::HOURS_SIX, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLed34h, 0)},
+            {led::Names::HOURS_EIGHT, led::LED(AbstractBoardConfig::CommunicationType::GPIO, pinLed44h, 0)}};
 
         const ButtonConfig* getButtonConfigs(size_t& count) const override {
             static constexpr ButtonConfig buttonConfigs[] = {
